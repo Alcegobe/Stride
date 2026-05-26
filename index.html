@@ -1837,6 +1837,24 @@ button { cursor: pointer; }
   line-height: 1.5;
 }
 .modal-actions .btn-inline { flex: 1; padding: 14px; }
+
+/* Desktop framing — cadre centré ≥ 768px (mobile inchangé) */
+@media (min-width: 768px) {
+  .onb, .tabs {
+    left: 50%;
+    right: auto;
+    width: 100%;
+    max-width: 480px;
+    transform: translateX(-50%);
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .app {
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    min-height: calc(100vh - 64px - env(safe-area-inset-bottom));
+  }
+}
 </style>
 </head>
 <body>
