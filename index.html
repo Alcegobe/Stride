@@ -1335,6 +1335,32 @@ button { cursor: pointer; }
   font-weight: 500;
 }
 
+.data-actions {
+  display: flex;
+  gap: 8px;
+}
+.data-btn {
+  flex: 1;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  transition: color 0.18s, border-color 0.18s, background 0.18s;
+}
+.data-btn:hover { color: var(--text); border-color: var(--text-3); }
+.data-btn:active { background: var(--surface); }
+.data-hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
 .danger-btn {
   width: 100%;
   padding: 14px;
@@ -2122,6 +2148,18 @@ button { cursor: pointer; }
           <div class="kv-value" id="profWeek">—</div>
         </div>
       </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-title">Mes données</div>
+      </div>
+      <div class="data-actions">
+        <button class="data-btn" onclick="exportData()">Exporter</button>
+        <button class="data-btn" onclick="document.getElementById('importInput').click()">Importer</button>
+        <input type="file" id="importInput" accept="application/json,.json" style="display:none" onchange="importData(event)">
+      </div>
+      <p class="data-hint">Télécharge une sauvegarde JSON de tous tes défis, rituels, poids et photos. À faire avant de changer de device ou d'effacer ton navigateur.</p>
     </div>
 
     <button class="danger-btn" onclick="confirmReset()">Tout réinitialiser</button>
@@ -3611,6 +3649,59 @@ function confirmReset() {
   if (!confirm('Effacer toutes tes données et recommencer depuis zéro ?')) return;
   STORE.all().forEach(k => localStorage.removeItem(k));
   location.reload();
+}
+
+function exportData() {
+  const data = {
+    app: 'Stride',
+    schema: 1,
+    exportedAt: new Date().toISOString(),
+    keys: {}
+  };
+  STORE.all().forEach(k => { data.keys[k] = localStorage.getItem(k); });
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `stride-backup-${todayKey()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Exporté', `${Object.keys(data.keys).length} entrées sauvegardées`);
+}
+
+function importData(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.app !== 'Stride' || !data.keys || typeof data.keys !== 'object') {
+        throw new Error('ce fichier ne ressemble pas à une sauvegarde Stride');
+      }
+      const entryCount = Object.keys(data.keys).length;
+      const exportDate = data.exportedAt
+        ? new Date(data.exportedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+        : 'date inconnue';
+      const ok = confirm(`Remplacer toutes tes données actuelles par cette sauvegarde du ${exportDate} (${entryCount} entrées) ?`);
+      if (!ok) return;
+      STORE.all().forEach(k => localStorage.removeItem(k));
+      Object.entries(data.keys).forEach(([k, v]) => {
+        if (typeof k === 'string' && k.startsWith('pa_') && typeof v === 'string') {
+          localStorage.setItem(k, v);
+        }
+      });
+      showToast('Importé', 'Données restaurées');
+      setTimeout(() => location.reload(), 600);
+    } catch (err) {
+      alert('Import impossible : ' + err.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
 }
 
 function spawnFloat(x, y, text, color) {
