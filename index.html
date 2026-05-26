@@ -1593,6 +1593,75 @@ button { cursor: pointer; }
 }
 .modal-actions { display: flex; gap: 8px; }
 
+/* Past-day modal — rattrapage des défis/rituels sur un jour antérieur */
+.modal-past-day { max-height: 85vh; overflow-y: auto; }
+.past-day-section { margin-top: 18px; }
+.past-day-section:first-child { margin-top: 4px; }
+.past-day-section-title {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.past-day-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.past-day-row:last-child { border-bottom: none; }
+.past-day-row-name { flex: 1; font-size: 14px; min-width: 100px; font-weight: 500; }
+.past-day-row-name.done { color: var(--positive); }
+.past-day-row-count {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--text-2);
+  font-feature-settings: 'tnum';
+}
+.past-day-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.past-day-btn {
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  min-width: 44px;
+  transition: all 0.15s;
+}
+.past-day-btn:active { background: var(--surface-2); color: var(--text); border-color: var(--text-3); }
+.past-day-ritual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.past-day-ritual-btn {
+  padding: 14px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  transition: all 0.15s;
+}
+.past-day-ritual-btn.on {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+/* Week-day cells are tappable for past + today (future is dimmed) */
+.week-day:not(.future) { cursor: pointer; }
+.week-day.future { opacity: 0.4; cursor: default; }
+
 /* === MODE SÉANCE GUIDÉ === */
 .session-cta {
   width: 100%;
@@ -2206,6 +2275,17 @@ button { cursor: pointer; }
   </div>
 </div>
 
+<div class="modal-bg" id="modalPastDay">
+  <div class="modal modal-past-day">
+    <div class="modal-tag" id="pastDayTag">Rattrapage</div>
+    <div class="modal-title" id="pastDayTitle">—</div>
+    <div id="pastDayContent"></div>
+    <div class="modal-actions">
+      <button class="btn-inline full" onclick="closeModal('modalPastDay')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <div class="photo-viewer-bg" id="photoViewer">
   <div class="photo-viewer-head">
     <button class="photo-viewer-close" onclick="closePhotoViewer()">Fermer</button>
@@ -2463,8 +2543,11 @@ const STORE = {
   all() { const r = []; for (let i=0; i<localStorage.length; i++){ const k = localStorage.key(i); if (k.startsWith(KEY)) r.push(k); } return r; }
 };
 
-function todayKey() { return new Date().toISOString().slice(0,10); }
-function dateKey(d) { const x = new Date(d); x.setHours(0,0,0,0); return x.toISOString().slice(0,10); }
+function dateKey(d) {
+  const x = new Date(d);
+  return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+}
+function todayKey() { return dateKey(new Date()); }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate()+n); return x; }
 
 function getProfile() { return STORE.get('profile', null); }
@@ -2803,7 +2886,8 @@ function renderToday(s) {
   const ws = document.getElementById('weekStrip');
   ws.innerHTML = s.weekDays.map(d => {
     const cls = [d.isToday && 'today', d.fullDone && 'done', d.hasActivity && !d.fullDone && 'partial', d.isFuture && 'future'].filter(Boolean).join(' ');
-    return `<div class="week-day ${cls}"><span class="week-letter">${d.letter}</span><span class="week-dot"></span></div>`;
+    const tap = d.isFuture ? '' : ` onclick="openPastDay('${d.date}')"`;
+    return `<div class="week-day ${cls}"${tap}><span class="week-letter">${d.letter}</span><span class="week-dot"></span></div>`;
   }).join('');
 
   const adapt = adaptationFactor(today);
@@ -3536,8 +3620,8 @@ function renderProfile(s) {
   }).join('');
 }
 
-function addReps(id, delta, event) {
-  const dk = todayKey();
+function addReps(id, delta, event, dateOverride) {
+  const dk = dateOverride || todayKey();
   const reps = STORE.get('reps_' + dk, {});
   const cur = reps[id] || 0;
   const next = Math.max(0, cur + delta);
@@ -3545,7 +3629,7 @@ function addReps(id, delta, event) {
   reps[id] = next;
   STORE.set('reps_' + dk, reps);
 
-  if (delta > 0) {
+  if (!dateOverride && delta > 0) {
     pulseTarget = { id, delta };
   }
 
@@ -3555,35 +3639,42 @@ function addReps(id, delta, event) {
     const u = a.unit === 'sec' ? 's' : '';
     spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffd60a');
   }
+  if (navigator.vibrate) navigator.vibrate(delta > 0 ? 8 : 6);
+
+  if (dateOverride) renderPastDayContent(dateOverride);
   renderAll();
 }
-function validateChallenge(id, event) {
-  const challenges = pickDailyChallenges(new Date());
+function validateChallenge(id, event, dateOverride) {
+  const dk = dateOverride || todayKey();
+  const dateForChallenges = dateOverride ? new Date(dateOverride + 'T00:00:00') : new Date();
+  const challenges = pickDailyChallenges(dateForChallenges);
   const c = challenges.find(x => x.id === id);
   if (!c) return;
-  const dk = todayKey();
   const reps = STORE.get('reps_' + dk, {});
   const cur = reps[id] || 0;
   if (cur >= c.target) return;
   const delta = c.target - cur;
   reps[id] = c.target;
   STORE.set('reps_' + dk, reps);
-  pulseTarget = { id, delta };
+  if (!dateOverride) pulseTarget = { id, delta };
   if (event) {
     const r = event.currentTarget.getBoundingClientRect();
     const u = c.activity.unit === 'sec' ? 's' : '';
     spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffd60a');
     if (navigator.vibrate) navigator.vibrate(40);
   }
+  if (dateOverride) renderPastDayContent(dateOverride);
   renderAll();
 }
-function toggleRitual(id) {
-  const dk = todayKey();
+function toggleRitual(id, dateOverride) {
+  const dk = dateOverride || todayKey();
   const r = STORE.get('rituals_' + dk, {});
   const wasOn = !!r[id];
   r[id] = !r[id];
   STORE.set('rituals_' + dk, r);
-  if (!wasOn) pulsedRitual = id;  // only animate when turning ON
+  if (!dateOverride && !wasOn) pulsedRitual = id;  // only animate when turning ON
+  if (navigator.vibrate) navigator.vibrate(!wasOn ? 15 : 8);
+  if (dateOverride) renderPastDayContent(dateOverride);
   renderAll();
 }
 function setCheckin(field, val) {
@@ -3736,6 +3827,72 @@ function processToast() {
 }
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+function openPastDay(dateStr) {
+  if (!dateStr) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return;
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d > today) return; // pas d'édition du futur
+  if (navigator.vibrate) navigator.vibrate(10);
+  renderPastDayContent(dateStr);
+  openModal('modalPastDay');
+}
+
+function renderPastDayContent(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  if (isNaN(d.getTime())) return;
+  const dayNames = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const title = `${dayNames[d.getDay()]} ${d.getDate()} ${monthNames[d.getMonth()]}`;
+  const tagEl = document.getElementById('pastDayTag');
+  if (tagEl) tagEl.textContent = dateStr === todayKey() ? "Aujourd'hui" : 'Rattrapage';
+  const titleEl = document.getElementById('pastDayTitle');
+  if (titleEl) titleEl.textContent = title;
+
+  const reps = STORE.get('reps_' + dateStr, {});
+  const rituals = STORE.get('rituals_' + dateStr, {});
+  const challenges = pickDailyChallenges(d);
+  let chDone = 0;
+  challenges.forEach(c => { if ((reps[c.id]||0) >= c.target) chDone++; });
+  let rDone = 0;
+  RITUALS.forEach(r => { if (rituals[r.id]) rDone++; });
+
+  const chHtml = challenges.map(c => {
+    const cur = reps[c.id] || 0;
+    const u = c.activity.unit === 'sec' ? 's' : '';
+    const incs = c.activity.unit === 'sec' ? [10, 30] : [1, 5];
+    const done = cur >= c.target;
+    return `
+      <div class="past-day-row">
+        <div class="past-day-row-name ${done ? 'done' : ''}">${c.activity.name}${done ? ' ✓' : ''}</div>
+        <div class="past-day-row-count">${cur}/${c.target}${u}</div>
+        <div class="past-day-actions">
+          <button class="past-day-btn" onclick="addReps('${c.id}', -1, event, '${dateStr}')">−</button>
+          <button class="past-day-btn" onclick="addReps('${c.id}', ${incs[0]}, event, '${dateStr}')">+${incs[0]}${u}</button>
+          <button class="past-day-btn" onclick="addReps('${c.id}', ${incs[1]}, event, '${dateStr}')">+${incs[1]}${u}</button>
+          <button class="past-day-btn" onclick="validateChallenge('${c.id}', event, '${dateStr}')">✓</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const rHtml = RITUALS.map(r => {
+    const on = !!rituals[r.id];
+    return `<button class="past-day-ritual-btn ${on ? 'on' : ''}" onclick="toggleRitual('${r.id}', '${dateStr}')">${r.name}</button>`;
+  }).join('');
+
+  document.getElementById('pastDayContent').innerHTML = `
+    <div class="past-day-section">
+      <div class="past-day-section-title">Défis · ${chDone}/4</div>
+      ${chHtml}
+    </div>
+    <div class="past-day-section">
+      <div class="past-day-section-title">Rituels · ${rDone}/4</div>
+      <div class="past-day-ritual">${rHtml}</div>
+    </div>
+  `;
+}
 
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => {
