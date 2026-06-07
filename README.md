@@ -1,6 +1,10 @@
 # Stride
 
-App fitness perso : 7 semaines de défis quotidiens calibrés (pompes, haut, bas, core) + rituels (eau, sommeil, marche, protéines) + suivi poids, photos, succès.
+App fitness perso : défis quotidiens **kettlebell + poids du corps** calibrés (pecs, haut, bas, core) + rituels (eau, sommeil, marche, protéines) + suivi poids, photos, succès.
+
+Mode kettlebell : tout le programme tourne autour d'une kettlebell (poids réglable, 16 kg par défaut) et du poids du corps. Le nombre de reps est calibré selon le profil (âge, taille, poids, sexe, objectif, niveau de départ) **et** la charge de la cloche (plus lourd = moins de reps).
+
+Système de niveau / XP : on gagne de l'XP en faisant ses séries (reps), ses rituels et ses pesées. Le **niveau** (affiché en grand sur l'accueil, avec barre qui monte et célébration à chaque palier) **pilote la difficulté** des défis : démarrage doux à 30 % des capacités au niveau 0, puis +5 % par niveau (plafond 160 %). L'XP est dérivée de stats monotones (jamais de « dé-level ») et la difficulté d'un jour est gelée par le niveau atteint en début de journée (pas de rétroactivité).
 
 **Live** : https://alcegobe.github.io/Stride/
 

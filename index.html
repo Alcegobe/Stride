@@ -1951,6 +1951,182 @@ button { cursor: pointer; }
     min-height: calc(100vh - 64px - env(safe-area-inset-bottom));
   }
 }
+
+/* === NIVEAU / XP === */
+.level-hero {
+  position: relative;
+  margin: 4px 0 18px;
+  padding: 18px 18px 16px;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 120% at 50% -20%, rgba(255,214,10,0.18), transparent 60%),
+    linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-2);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.level-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 80% at 50% 0%, rgba(255,214,10,0.10), transparent 70%);
+  pointer-events: none;
+}
+.level-hero-top {
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 1;
+}
+.level-hero-tag {
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700;
+}
+.level-hero-kb {
+  font-size: 11px; letter-spacing: 0.04em;
+  color: var(--text-3);
+  border: 1px solid var(--border-2); border-radius: 999px;
+  padding: 3px 10px;
+}
+.level-hero-num {
+  position: relative; z-index: 1;
+  font-size: 92px; line-height: 0.92; font-weight: 800;
+  letter-spacing: -0.04em;
+  text-align: center;
+  margin-top: 4px;
+  color: var(--text);
+  text-shadow: 0 0 32px rgba(255,214,10,0.25);
+  font-feature-settings: 'ss01' 0;
+  transition: transform 0.18s cubic-bezier(.2,1.4,.4,1);
+}
+.level-hero-num.bump { transform: scale(1.16); }
+.level-hero-word {
+  position: relative; z-index: 1;
+  text-align: center;
+  font-size: 12px; letter-spacing: 0.4em; text-transform: uppercase;
+  color: var(--text-3); margin: 2px 0 14px; padding-left: 0.4em;
+}
+.level-bar {
+  position: relative; z-index: 1;
+  height: 10px; border-radius: 999px;
+  background: var(--surface-3);
+  overflow: hidden;
+  border: 1px solid var(--border-2);
+}
+.level-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  box-shadow: 0 0 14px rgba(255,214,10,0.5);
+  width: 0%;
+  transition: width 0.7s cubic-bezier(.2,.8,.2,1);
+}
+.level-hero-foot {
+  position: relative; z-index: 1;
+  display: flex; justify-content: space-between;
+  margin-top: 9px;
+  font-size: 12px; color: var(--text-3);
+}
+.level-hero-foot span:first-child { color: var(--accent); font-weight: 600; }
+
+/* Bloc niveau dans le Profil */
+.prof-level {
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface));
+  border: 1px solid var(--border-2);
+}
+.prof-level-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.prof-level-num {
+  font-size: 54px; line-height: 1; font-weight: 800; letter-spacing: -0.04em;
+  color: var(--accent);
+  text-shadow: 0 0 24px rgba(255,214,10,0.3);
+}
+.prof-level-word { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-3); }
+.prof-level-xp { font-size: 14px; color: var(--text-2); margin-top: 2px; }
+.prof-level-sub { font-size: 12px; color: var(--text-3); margin-top: 12px; line-height: 1.5; }
+.prof-level-sub b { color: var(--accent); }
+.cap-kb {
+  display: inline-block; margin-left: 5px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--accent);
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
+/* Pastille kettlebell sur les cartes lestées */
+.card-kb {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.03em;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  background: var(--accent-dim);
+  border-radius: 999px;
+  padding: 1px 7px;
+  vertical-align: middle;
+}
+
+/* Overlay « niveau supérieur » */
+.levelup-bg {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(4px);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.levelup-bg.show { opacity: 1; pointer-events: auto; }
+.levelup-card {
+  position: relative;
+  text-align: center;
+  padding: 30px 40px;
+  transform: scale(0.7);
+  transition: transform 0.45s cubic-bezier(.2,1.5,.4,1);
+}
+.levelup-bg.show .levelup-card { transform: scale(1); }
+.levelup-rays {
+  position: absolute; inset: -60px;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,214,10,0.16) 14deg, transparent 28deg, transparent 42deg, rgba(255,214,10,0.16) 56deg, transparent 70deg);
+  border-radius: 50%;
+  animation: spinRays 9s linear infinite;
+  pointer-events: none;
+}
+@keyframes spinRays { to { transform: rotate(360deg); } }
+.levelup-tag {
+  position: relative;
+  font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--accent); font-weight: 700; margin-bottom: 6px;
+}
+.levelup-num {
+  position: relative;
+  font-size: 132px; line-height: 1; font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  text-shadow: 0 0 50px rgba(255,214,10,0.55);
+  animation: lvlPop 0.6s cubic-bezier(.2,1.5,.4,1);
+}
+@keyframes lvlPop { 0% { transform: scale(0.4); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+.levelup-word {
+  position: relative;
+  font-size: 14px; letter-spacing: 0.5em; text-transform: uppercase;
+  color: var(--text-2); margin-top: 4px; padding-left: 0.5em;
+}
+.levelup-sub {
+  position: relative;
+  font-size: 14px; color: var(--text-3); margin-top: 14px;
+}
+.confetti {
+  position: fixed; top: -20px;
+  width: 9px; height: 14px; z-index: 210;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
+}
 </style>
 </head>
 <body>
@@ -1969,7 +2145,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="2">
-    <div class="onb-count">Étape 1 sur 7</div>
+    <div class="onb-count">Étape 1 sur 8</div>
     <h1 class="onb-q">Comment on <em>t'appelle</em> ?</h1>
     <p class="onb-hint">Juste un prénom pour personnaliser l'app.</p>
     <div class="onb-field">
@@ -1983,7 +2159,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="3">
-    <div class="onb-count">Étape 2 sur 7</div>
+    <div class="onb-count">Étape 2 sur 8</div>
     <h1 class="onb-q">Ton <em>âge</em> ?</h1>
     <p class="onb-hint">Sert à calibrer la difficulté.</p>
     <div class="onb-field">
@@ -1997,7 +2173,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="4">
-    <div class="onb-count">Étape 3 sur 7</div>
+    <div class="onb-count">Étape 3 sur 8</div>
     <h1 class="onb-q">Tu es <em>plutôt</em>...</h1>
     <p class="onb-hint">Pour adapter les volumes (la physiologie diffère légèrement).</p>
     <div class="onb-field">
@@ -2014,7 +2190,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="5">
-    <div class="onb-count">Étape 4 sur 7</div>
+    <div class="onb-count">Étape 4 sur 8</div>
     <h1 class="onb-q">Ta <em>taille</em> ?</h1>
     <p class="onb-hint">En centimètres.</p>
     <div class="onb-field">
@@ -2028,7 +2204,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="6">
-    <div class="onb-count">Étape 5 sur 7</div>
+    <div class="onb-count">Étape 5 sur 8</div>
     <h1 class="onb-q">Ton poids <em>actuel</em> ?</h1>
     <p class="onb-hint">En kilogrammes. Tu pourras suivre l'évolution dans l'onglet Progrès.</p>
     <div class="onb-field">
@@ -2042,7 +2218,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="7">
-    <div class="onb-count">Étape 6 sur 7</div>
+    <div class="onb-count">Étape 6 sur 8</div>
     <h1 class="onb-q">Ton <em>niveau actuel</em> ?</h1>
     <p class="onb-hint">Sois honnête, ça calibre le départ.</p>
     <div class="onb-field">
@@ -2059,7 +2235,7 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="8">
-    <div class="onb-count">Étape 7 sur 7</div>
+    <div class="onb-count">Étape 7 sur 8</div>
     <h1 class="onb-q">Ton <em>objectif</em> principal ?</h1>
     <p class="onb-hint">On adapte le volume et le rythme.</p>
     <div class="onb-field">
@@ -2077,9 +2253,22 @@ button { cursor: pointer; }
   </section>
 
   <section class="onb-step" data-step="9">
+    <div class="onb-count">Étape 8 sur 8</div>
+    <h1 class="onb-q">Ta <em>kettlebell</em> ?</h1>
+    <p class="onb-hint">Tout le programme tourne autour d'une kettlebell + ton poids du corps. Indique son poids (en kg) — il sert à calibrer le nombre de reps.</p>
+    <div class="onb-field">
+      <input type="number" class="onb-input" id="obKb" placeholder="16" inputmode="decimal" min="4" max="48" step="0.5" value="16">
+    </div>
+    <div class="onb-nav">
+      <button class="onb-back" onclick="onbBack()">Retour</button>
+      <button class="onb-next" onclick="onbNext()">Suivant</button>
+    </div>
+  </section>
+
+  <section class="onb-step" data-step="10">
     <div class="onb-count">Tout est prêt</div>
     <h1 class="onb-q">Ton <em>programme</em>.</h1>
-    <p class="onb-hint">Estimation basée sur ton profil. Démarrage doux à 30 % de ces capacités, progression progressive sur 7 semaines.</p>
+    <p class="onb-hint">Estimation basée sur ton profil et ta kettlebell. Démarrage doux à 30 % de ces capacités (niveau 0), puis la difficulté monte à chaque niveau gagné.</p>
     <div class="onb-recap" id="obRecap"></div>
     <div class="onb-field"></div>
     <div class="onb-nav">
@@ -2098,6 +2287,20 @@ button { cursor: pointer; }
   <section class="view show" id="view-today">
     <div class="view-title" id="todayTitle">Aujourd'hui</div>
     <div class="view-sub" id="todayDate"></div>
+
+    <div class="level-hero" id="levelHero" onclick="switchTab('profile')">
+      <div class="level-hero-top">
+        <div class="level-hero-tag" id="levelHeroTag">Niveau</div>
+        <div class="level-hero-kb" id="levelHeroKb">Kettlebell 16 kg</div>
+      </div>
+      <div class="level-hero-num" id="levelHeroNum">0</div>
+      <div class="level-hero-word">Niveau</div>
+      <div class="level-bar"><div class="level-bar-fill" id="levelBarFill" style="width:0%"></div></div>
+      <div class="level-hero-foot">
+        <span id="levelHeroXp">0 / 100 XP</span>
+        <span id="levelHeroNext">Niv. 1 dans 100 XP</span>
+      </div>
+    </div>
 
     <div class="week-strip" id="weekStrip"></div>
 
@@ -2182,6 +2385,27 @@ button { cursor: pointer; }
           <div class="kv-label">IMC</div>
           <div class="kv-value" id="profBmi">—</div>
         </div>
+        <div class="kv-row">
+          <div class="kv-label">Kettlebell (kg)</div>
+          <input type="number" class="kv-edit" id="profKb" min="4" max="48" step="0.5">
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-title">Niveau &amp; XP</div>
+      </div>
+      <div class="prof-level">
+        <div class="prof-level-row">
+          <div class="prof-level-num" id="profLvlNum">0</div>
+          <div class="prof-level-info">
+            <div class="prof-level-word">Niveau</div>
+            <div class="prof-level-xp" id="profLvlXp">0 XP</div>
+          </div>
+        </div>
+        <div class="level-bar"><div class="level-bar-fill" id="profLvlBar" style="width:0%"></div></div>
+        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">30 %</b> de tes capacités. Plus tu montes de niveau, plus les défis sont costauds.</div>
       </div>
     </div>
 
@@ -2190,7 +2414,7 @@ button { cursor: pointer; }
         <div class="sec-title">Capacités estimées</div>
       </div>
       <div class="capacities">
-        <div class="capacities-sub">D'après ton profil. Les défis quotidiens partent de 30 % de ces valeurs et progressent semaine après semaine.</div>
+        <div class="capacities-sub">Tes max estimés avec ta kettlebell. Les défis du jour partent de 30 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
         <div class="cap-grid" id="capGrid"></div>
       </div>
     </div>
@@ -2201,7 +2425,7 @@ button { cursor: pointer; }
       </div>
       <div class="kv">
         <div class="kv-row">
-          <div class="kv-label">Niveau</div>
+          <div class="kv-label">Niveau de départ</div>
           <div class="kv-value" id="profLevel">—</div>
         </div>
         <div class="kv-row">
@@ -2248,6 +2472,16 @@ button { cursor: pointer; }
   <div>
     <div class="toast-tag" id="toastTag">Bravo</div>
     <div class="toast-msg" id="toastMsg">Message</div>
+  </div>
+</div>
+
+<div class="levelup-bg" id="levelupOverlay">
+  <div class="levelup-card">
+    <div class="levelup-rays"></div>
+    <div class="levelup-tag">Niveau supérieur</div>
+    <div class="levelup-num" id="levelupNum">1</div>
+    <div class="levelup-word">NIVEAU</div>
+    <div class="levelup-sub" id="levelupSub">Les défis montent d'un cran.</div>
   </div>
 </div>
 
@@ -2335,36 +2569,38 @@ const IMAGES = {
 };
 
 const ACTIVITIES = {
-  // PECS — daily chest emphasis
-  pompes:     { name: 'Pompes',            cat: 'pecs', unit: 'reps', baseFactor: 25, desc: "Position planche, mains largeur d'épaules. Descends jusqu'à frôler le sol, remonte sans bloquer les coudes. Trop dur ? Mains sur le banc (inclinées), ou sur les genoux." },
-  bench:      { name: 'Développé couché',  cat: 'pecs', unit: 'reps', baseFactor: 18, desc: "Allongé sur le banc, haltères au niveau des épaules. Pousse au plafond sans verrouiller les coudes. Descente contrôlée, sans rebond. Cible principale : pectoraux." },
-  decline:    { name: 'Pompes déclinées',  cat: 'pecs', unit: 'reps', baseFactor: 16, desc: "Pieds surélevés sur le banc, mains au sol largeur d'épaules. Même technique que les pompes classiques, mais plus dur. Met l'accent sur le haut des pectoraux et les épaules. Si trop dur, fais des pompes classiques." },
-  fly:        { name: 'Écarté haltères',   cat: 'pecs', unit: 'reps', baseFactor: 14, desc: "Allongé sur le banc, un haltère dans chaque main, bras tendus au-dessus de la poitrine paumes face à face. Écarte les bras en arc de cercle, légère flexion fixe au coude, jusqu'à sentir l'étirement des pectoraux. Remonte en serrant. Mouvement lent et contrôlé, isolation pure." },
+  // PECS — poitrine (poids du corps + kettlebell)
+  pompes:     { name: 'Pompes',                   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 25, desc: "Position planche, mains largeur d'épaules. Descends jusqu'à frôler le sol, remonte sans bloquer les coudes. Trop dur ? Mains sur une chaise (inclinées), ou sur les genoux." },
+  bench:      { name: 'Floor press kettlebell',   cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains au niveau de la poitrine, coudes posés au sol. Pousse la cloche au plafond sans verrouiller les coudes, redescends jusqu'à ce que les triceps touchent le sol. Cible : pectoraux et triceps." },
+  decline:    { name: 'Pompes pieds surélevés',   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 18, desc: "Pieds surélevés sur une chaise ou un canapé, mains au sol largeur d'épaules. Même technique que les pompes classiques, mais plus dur : l'accent passe sur le haut des pectoraux et les épaules. Si trop dur, fais des pompes classiques au sol." },
+  fly:        { name: 'Pull-over kettlebell',     cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains bras tendus au-dessus de la poitrine. Descends lentement la cloche derrière la tête, bras quasi tendus, jusqu'à sentir l'étirement, puis ramène au-dessus de la poitrine. Gaine fort, ne cambre pas." },
 
-  // HAUT — pull / shoulders
-  rowing:     { name: 'Rowing 1 bras',     cat: 'haut', unit: 'reps', baseFactor: 24, desc: "Un genou et une main sur le banc, dos parallèle au sol. Tire l'haltère vers la hanche, coude longe le corps, omoplate rétractée. Total des 2 côtés." },
-  press:      { name: 'Développé épaules', cat: 'haut', unit: 'reps', baseFactor: 18, desc: "Debout, haltères au niveau des épaules. Gaine fort les abdos, pousse droit au-dessus de la tête. Évite de cambrer le bas du dos." },
-  renegade:   { name: 'Renegade row',      cat: 'haut', unit: 'reps', baseFactor: 16, desc: "Planche haute, mains sur les haltères au sol, jambes un peu écartées pour la stabilité. Tire un haltère vers la hanche, repose, alterne. Le défi : ne pas tourner les hanches. Total des 2 côtés." },
+  // HAUT — épaules / dos (kettlebell)
+  rowing:     { name: 'Rowing kettlebell 1 bras', cat: 'haut', unit: 'reps', kb: true,  baseFactor: 24, desc: "Une main et un genou en appui sur une chaise, dos parallèle au sol, kettlebell dans l'autre main bras tendu. Tire la cloche vers la hanche, coude le long du corps, omoplate rétractée. Total des 2 côtés." },
+  press:      { name: 'Développé militaire KB',   cat: 'haut', unit: 'reps', kb: true,  baseFactor: 16, desc: "Debout, kettlebell en rack contre l'avant-bras au niveau de l'épaule. Gaine fort les abdos, pousse droit au-dessus de la tête sans cambrer le bas du dos. Redescends en contrôle. Total des 2 côtés." },
+  renegade:   { name: 'Renegade row kettlebell',  cat: 'haut', unit: 'reps', kb: true,  baseFactor: 14, desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main. Le défi : garder le bassin immobile. Total des 2 côtés." },
 
-  // BAS
-  goblet:     { name: 'Goblet squat',      cat: 'bas',  unit: 'reps', baseFactor: 35, desc: "Tiens un haltère verticalement contre la poitrine, coudes pointés vers l'avant. Squat profond, dos droit, talons au sol. Coudes entre les genoux en position basse." },
-  bulgarian:  { name: 'Bulgarian',         cat: 'bas',  unit: 'reps', baseFactor: 22, desc: "Pied arrière sur le banc, jambe avant à 60 cm. Descends verticalement jusqu'à 90° au genou avant. Tronc vertical. Total des 2 côtés." },
-  fentes:     { name: 'Fentes',            cat: 'bas',  unit: 'reps', baseFactor: 30, desc: "Pas en avant, descends jusqu'à 90° au genou avant. Genou arrière effleure le sol. Tronc droit. Total des 2 jambes." },
-  rdl:        { name: 'Soulevé roumain',   cat: 'bas',  unit: 'reps', baseFactor: 22, desc: "Debout, haltères devant les cuisses. Pousse les fesses en arrière, descends le long des jambes sans arrondir le dos. Légère flexion des genoux. Remonte en contractant les fessiers." },
-  bridge:     { name: 'Pont fessier',      cat: 'bas',  unit: 'reps', baseFactor: 35, desc: "Allongé sur le dos, pieds au sol. Pousse les hanches vers le haut en serrant fort les fessiers. Aligne épaule-hanche-genou en haut, pause une seconde." },
-  jumpsquats: { name: 'Squats sautés',     cat: 'bas',  unit: 'reps', baseFactor: 20, desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, enchaîne directement. Genoux alignés avec les pieds à l'atterrissage." },
+  // BAS — jambes / fessiers (kettlebell + poids du corps)
+  kbswing:    { name: 'Kettlebell swing',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 30, desc: "Pieds largeur d'épaules, kettlebell devant toi. Pousse les hanches en arrière, attrape la cloche et propulse-la à hauteur des épaules par une extension explosive des hanches (pas avec les bras). Le dos reste droit. C'est le mouvement signature de la kettlebell." },
+  goblet:     { name: 'Goblet squat',             cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 20, desc: "Tiens la kettlebell verticalement contre la poitrine, coudes pointés vers le bas. Squat profond, dos droit, talons au sol. Coudes entre les genoux en position basse, puis remonte en poussant dans les talons." },
+  bulgarian:  { name: 'Fente bulgare kettlebell', cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Pied arrière sur une chaise, jambe avant à 60 cm, kettlebell tenue contre la poitrine. Descends verticalement jusqu'à 90° au genou avant. Tronc droit. Total des 2 côtés." },
+  fentes:     { name: 'Fente kettlebell',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Kettlebell tenue contre la poitrine (goblet) ou en rack. Pas en avant, descends jusqu'à 90° au genou avant, genou arrière effleure le sol. Tronc droit. Total des 2 jambes." },
+  rdl:        { name: 'Soulevé roumain KB',       cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 22, desc: "Debout, kettlebell tenue à deux mains devant les cuisses. Pousse les fesses en arrière, descends la cloche le long des jambes sans arrondir le dos, légère flexion des genoux. Remonte en contractant les fessiers." },
+  bridge:     { name: 'Hip thrust lesté',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 28, desc: "Allongé sur le dos, pieds au sol, kettlebell posée sur le bas-ventre (tenue à deux mains). Pousse les hanches vers le haut en serrant fort les fessiers, aligne épaule-hanche-genou en haut, pause une seconde, redescends en contrôle." },
+  jumpsquats: { name: 'Squats sautés',            cat: 'bas',  unit: 'reps', kb: false, baseFactor: 20, desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, enchaîne directement. Genoux alignés avec les pieds à l'atterrissage." },
 
-  // CORE
-  gainage:    { name: 'Gainage',           cat: 'core', unit: 'sec',  baseFactor: 60, desc: "Avant-bras et pointes de pieds. Corps parfaitement aligné. Serre les fessiers, rentre le nombril, respire calmement. Ne laisse pas les hanches s'affaisser ni se relever." },
-  deadbug:    { name: 'Dead bug',          cat: 'core', unit: 'reps', baseFactor: 16, desc: "Sur le dos, bras tendus vers le plafond, jambes en 'table' (genoux à 90°). Étends lentement bras gauche + jambe droite vers le sol sans toucher, reviens, alterne. Bas du dos collé au sol en permanence. Total des 2 côtés." },
-  climbers:   { name: 'Mountain climbers', cat: 'core', unit: 'reps', baseFactor: 30, desc: "Planche haute. Ramène un genou vers la poitrine, repose, alterne avec l'autre, rapide. Hanches stables (ne pas relever le fessier). Chaque genou compte pour 1." },
-  hollow:     { name: 'Hollow hold',       cat: 'core', unit: 'sec',  baseFactor: 30, desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues. Bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique." }
+  // CORE — gainage / abdos (poids du corps + kettlebell)
+  gainage:    { name: 'Gainage',                  cat: 'core', unit: 'sec',  kb: false, baseFactor: 60, desc: "Avant-bras et pointes de pieds. Corps parfaitement aligné. Serre les fessiers, rentre le nombril, respire calmement. Ne laisse pas les hanches s'affaisser ni se relever." },
+  kbtwist:    { name: 'Russian twist kettlebell', cat: 'core', unit: 'reps', kb: true,  baseFactor: 30, desc: "Assis, buste incliné en arrière à 45°, talons décollés (ou au sol si trop dur), kettlebell tenue à deux mains devant le sternum. Pivote le buste pour amener la cloche d'un côté puis de l'autre. Chaque côté compte pour 1." },
+  deadbug:    { name: 'Dead bug',                 cat: 'core', unit: 'reps', kb: false, baseFactor: 16, desc: "Sur le dos, bras tendus vers le plafond, jambes en 'table' (genoux à 90°). Étends lentement bras gauche + jambe droite vers le sol sans toucher, reviens, alterne. Bas du dos collé au sol en permanence. Total des 2 côtés." },
+  climbers:   { name: 'Mountain climbers',        cat: 'core', unit: 'reps', kb: false, baseFactor: 30, desc: "Planche haute. Ramène un genou vers la poitrine, repose, alterne avec l'autre, rapide. Hanches stables (ne pas relever le fessier). Chaque genou compte pour 1." },
+  hollow:     { name: 'Hollow hold',              cat: 'core', unit: 'sec',  kb: false, baseFactor: 30, desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues. Bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique." }
 };
 
 const PECS = ['pompes','bench','decline','fly'];
 const HAUT = ['rowing','press','renegade'];
-const BAS  = ['goblet','bulgarian','fentes','rdl','bridge','jumpsquats'];
-const CORE = ['gainage','deadbug','climbers','hollow'];
+const BAS  = ['kbswing','goblet','bulgarian','fentes','rdl','bridge','jumpsquats'];
+const CORE = ['gainage','kbtwist','deadbug','climbers','hollow'];
 
 const RITUALS = [
   { id: 'water',   name: 'Eau 2 L' },
@@ -2372,8 +2608,6 @@ const RITUALS = [
   { id: 'walk',    name: 'Marche 20 min' },
   { id: 'protein', name: 'Protéines ×3' }
 ];
-
-const WEEK_FACTORS = [0.30, 0.42, 0.55, 0.70, 0.85, 1.00, 1.15];
 
 function computeCapacities(p) {
   const heightM = p.height / 100;
@@ -2389,6 +2623,11 @@ function computeCapacities(p) {
   const fLvl = p.level === 'sed' ? 0.45 : p.level === 'occ' ? 0.75 : 1.0;
   const fGoal = p.goal === 'fat' ? 1.10 : p.goal === 'muscle' ? 0.95 : p.goal === 'both' ? 1.0 : 1.05;
 
+  // Charge de la kettlebell : les baseFactor des exos lestés sont calibrés pour 16 kg.
+  // Une cloche plus lourde => moins de reps ; plus légère => davantage.
+  const kbWeight = kbWeightOf(p);
+  const fLoad = Math.max(0.5, Math.min(1.8, 16 / kbWeight));
+
   const result = {};
   for (const k in ACTIVITIES) {
     const a = ACTIVITIES[k];
@@ -2396,6 +2635,7 @@ function computeCapacities(p) {
     if (a.cat === 'haut' || a.cat === 'pecs') f *= fPush * fBmiPush;
     else if (a.cat === 'bas') f *= fLegs * fBmiLegs;
     else f *= fCore;
+    if (a.kb) f *= fLoad;
     const value = a.baseFactor * f;
     result[k] = Math.max(a.unit === 'sec' ? 15 : 5, Math.round(value));
   }
@@ -2551,8 +2791,94 @@ function todayKey() { return dateKey(new Date()); }
 function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate()+n); return x; }
 
 function getProfile() { return STORE.get('profile', null); }
-function setProfile(p) { STORE.set('profile', p); }
+function setProfile(p) { invalidateXp(); STORE.set('profile', p); }
 function isOnboarded() { return !!STORE.get('profile', null); }
+
+// Poids de la kettlebell (kg). Défaut 16 pour les profils créés avant le mode kettlebell.
+function kbWeightOf(p) {
+  const w = p && p.kbWeight;
+  return (typeof w === 'number' && w > 0) ? w : 16;
+}
+
+/* === SYSTÈME D'XP / NIVEAU ===
+   L'XP est dérivée de stats monotones (jamais décroissantes) pour éviter tout
+   "dé-level" : reps loggées, rituels validés, pesées. Le niveau pilote la
+   difficulté des défis (voir levelDifficulty), affiché en grand sur l'accueil. */
+const XP_PER_REP    = 1;   // chaque rep / seconde d'effort
+const XP_PER_RITUAL = 6;   // chaque rituel validé
+const XP_PER_WEIGH  = 12;  // chaque pesée enregistrée
+const LVL_BASE = 100;      // XP cumulée pour atteindre le niveau L = LVL_BASE * L^LVL_EXP
+const LVL_EXP  = 1.5;
+
+function xpToReachLevel(L) { return Math.round(LVL_BASE * Math.pow(L, LVL_EXP)); }
+function levelFromXp(xp) {
+  xp = Math.max(0, xp);
+  let level = Math.floor(Math.pow(xp / LVL_BASE, 1 / LVL_EXP));
+  if (level < 0) level = 0;
+  // garde-fou flottant
+  while (xpToReachLevel(level + 1) <= xp) level++;
+  while (level > 0 && xpToReachLevel(level) > xp) level--;
+  const floorXp = xpToReachLevel(level);
+  const nextXp  = xpToReachLevel(level + 1);
+  const into = xp - floorXp;
+  const span = Math.max(1, nextXp - floorXp);
+  return { level, total: xp, into, span, nextXp, toNext: nextXp - xp, pct: Math.min(100, into / span * 100) };
+}
+
+// La difficulté monte avec le niveau : démarrage doux à 30 % des capacités (niveau 0),
+// +5 % par niveau, plafonné à 160 %.
+function levelDifficulty(level) { return Math.min(1.6, 0.30 + level * 0.05); }
+
+// Timeline d'XP par date, calculée uniquement à partir de stats monotones et
+// INDÉPENDANTES des objectifs du jour (pas d'appel à pickDailyChallenges) afin
+// d'éviter toute récursion / rétroactivité. Mise en cache, invalidée à l'écriture.
+let _xpCache = null;
+function invalidateXp() { _xpCache = null; }
+function getXpTimeline() {
+  if (_xpCache) return _xpCache;
+  const repsByDate = {};    // date -> somme de toutes les reps/sec loggées ce jour
+  const ritByDate  = {};    // date -> nb de rituels validés ce jour
+  STORE.all().forEach(k => {
+    if (k.startsWith(KEY + 'reps_')) {
+      const date = k.slice((KEY + 'reps_').length);
+      let sum = 0;
+      try {
+        const obj = JSON.parse(localStorage.getItem(k) || '{}');
+        for (const id in obj) { const v = obj[id]; if (typeof v === 'number' && v > 0) sum += v; }
+      } catch (e) {}
+      repsByDate[date] = (repsByDate[date] || 0) + sum;
+    } else if (k.startsWith(KEY + 'rituals_')) {
+      const date = k.slice((KEY + 'rituals_').length);
+      let n = 0;
+      try {
+        const obj = JSON.parse(localStorage.getItem(k) || '{}');
+        for (const id in obj) { if (obj[id]) n++; }
+      } catch (e) {}
+      ritByDate[date] = (ritByDate[date] || 0) + n;
+    }
+  });
+  const weighCount = (STORE.get('weights', []) || []).length;
+
+  const dates = Array.from(new Set([...Object.keys(repsByDate), ...Object.keys(ritByDate)])).sort();
+  const xpBefore = {};   // XP cumulée STRICTEMENT avant ce jour (gèle la difficulté du jour)
+  let running = 0;
+  dates.forEach(date => {
+    xpBefore[date] = running;
+    running += (repsByDate[date] || 0) * XP_PER_REP + (ritByDate[date] || 0) * XP_PER_RITUAL;
+  });
+  // Les pesées comptent dans le total courant (pas attribuées à un jour de défi précis).
+  const total = running + weighCount * XP_PER_WEIGH;
+
+  _xpCache = { xpBefore, total, dates };
+  return _xpCache;
+}
+
+// Niveau « gelé » au début d'un jour donné -> sert à figer la difficulté de ce jour.
+function levelForDate(dk) {
+  const tl = getXpTimeline();
+  const before = tl.xpBefore[dk] !== undefined ? tl.xpBefore[dk] : tl.total;
+  return levelFromXp(before).level;
+}
 
 function dayOffset() {
   const p = getProfile();
@@ -2583,11 +2909,8 @@ function pickDailyChallenges(date) {
   const caps = computeCapacities(profile);
   const dk = typeof date === 'string' ? date : dateKey(date);
   const dObj = new Date(dk + 'T00:00:00');
-  const start = new Date(profile.startDate);
-  start.setHours(0,0,0,0);
-  const off = Math.floor((dObj - start) / 86400000);
-  const wk = off < 0 ? 1 : off >= 49 ? 7 : Math.floor(off / 7) + 1;
-  const wkFactor = WEEK_FACTORS[wk - 1];
+  // La difficulté est pilotée par le NIVEAU (gelé au début du jour pour rester stable).
+  const lvlFactor = levelDifficulty(levelForDate(dk));
 
   let s = parseInt(dk.replace(/-/g,''), 10);
   function next() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; }
@@ -2601,7 +2924,7 @@ function pickDailyChallenges(date) {
   const adapt = adaptationFactor(dObj);
   return [pecs, haut, bas, core].map(id => {
     const a = ACTIVITIES[id];
-    let target = Math.round(caps[id] * wkFactor * adapt);
+    let target = Math.round(caps[id] * lvlFactor * adapt);
     target = Math.max(a.unit === 'sec' ? 10 : 3, target);
     return { id, activity: a, target, adapt };
   });
@@ -2712,6 +3035,9 @@ function aggregate() {
       fullDone: done === 4
     });
   }
+
+  state.xp = getXpTimeline().total;
+  state.levelInfo = levelFromXp(state.xp);
   return state;
 }
 
@@ -2759,8 +3085,8 @@ function goalProgress(s) {
 }
 
 let onbStep = 1;
-const TOTAL_STEPS = 9;
-const onbData = { name:'', age:null, sex:null, height:null, weight:null, level:null, goal:null };
+const TOTAL_STEPS = 10;
+const onbData = { name:'', age:null, sex:null, height:null, weight:null, level:null, goal:null, kbWeight:16 };
 
 function renderOnbBar() {
   const bar = document.getElementById('onbBar');
@@ -2781,7 +3107,7 @@ function showStep(n) {
     const inp = next && next.querySelector('input');
     if (inp) inp.focus();
   }, 100);
-  if (n === 9) renderOnbRecap();
+  if (n === 10) renderOnbRecap();
 }
 function onbBack() { if (onbStep > 1) showStep(onbStep - 1); }
 function onbNext() {
@@ -2808,6 +3134,11 @@ function onbNext() {
   }
   if (onbStep === 7 && !onbData.level) return;
   if (onbStep === 8 && !onbData.goal) return;
+  if (onbStep === 9) {
+    const v = parseFloat(document.getElementById('obKb').value);
+    if (!v || v < 4 || v > 48) { document.getElementById('obKb').focus(); return; }
+    onbData.kbWeight = v;
+  }
   if (onbStep < TOTAL_STEPS) showStep(onbStep + 1);
 }
 function setupChoiceGroup(containerId, dataKey, nextBtnId) {
@@ -2832,9 +3163,10 @@ function renderOnbRecap() {
     <div class="onb-recap-row"><div class="l">Profil</div><div class="v">${p.name}, ${p.age} ans</div></div>
     <div class="onb-recap-row"><div class="l">Mesures</div><div class="v">${p.height} cm · ${p.weight} kg</div></div>
     <div class="onb-recap-row"><div class="l">IMC</div><div class="v">${bmi} · ${bmiClass(bmi)}</div></div>
-    <div class="onb-recap-row"><div class="l">Niveau</div><div class="v">${levelLabel(p.level)}</div></div>
+    <div class="onb-recap-row"><div class="l">Niveau de départ</div><div class="v">${levelLabel(p.level)}</div></div>
     <div class="onb-recap-row"><div class="l">Objectif</div><div class="v">${goalLabel(p.goal)}</div></div>
-    <div class="onb-recap-row"><div class="l">Pompes max</div><div class="v">${caps.pompes}</div></div>
+    <div class="onb-recap-row"><div class="l">Kettlebell</div><div class="v">${p.kbWeight} kg</div></div>
+    <div class="onb-recap-row"><div class="l">Kettlebell swing max</div><div class="v">${caps.kbswing}</div></div>
     <div class="onb-recap-row"><div class="l">Goblet squat max</div><div class="v">${caps.goblet}</div></div>
     <div class="onb-recap-row"><div class="l">Gainage max</div><div class="v">${caps.gainage}s</div></div>
   `;
@@ -2855,9 +3187,11 @@ let pulseTarget = null;
 let pulsedRitual = null;
 let lastDoneCards = new Set();
 let lastDoneInitialized = false;
+let lastLevel = null;
 function renderAll() {
   const s = aggregate();
   if (!s.profile) return;
+  renderLevel(s);
   renderToday(s);
   renderCoach(s);
   renderProgress(s);
@@ -2873,6 +3207,59 @@ function renderAll() {
     });
   }
   lastAchSet = cur;
+
+  // Détection de montée de niveau -> célébration
+  const lvl = s.levelInfo.level;
+  if (lastLevel !== null && lvl > lastLevel) celebrateLevelUp(lvl);
+  lastLevel = lvl;
+}
+
+function renderLevel(s) {
+  const li = s.levelInfo;
+  const kb = kbWeightOf(s.profile);
+  const numEl = document.getElementById('levelHeroNum');
+  if (numEl) numEl.textContent = li.level;
+  const kbEl = document.getElementById('levelHeroKb');
+  if (kbEl) kbEl.textContent = `Kettlebell ${kb} kg`;
+  const fill = document.getElementById('levelBarFill');
+  if (fill) fill.style.width = li.pct.toFixed(1) + '%';
+  const xpEl = document.getElementById('levelHeroXp');
+  if (xpEl) xpEl.textContent = `${li.into} / ${li.span} XP`;
+  const nextEl = document.getElementById('levelHeroNext');
+  if (nextEl) nextEl.textContent = `Niv. ${li.level + 1} dans ${li.toNext} XP`;
+}
+
+function celebrateLevelUp(level) {
+  const ov = document.getElementById('levelupOverlay');
+  document.getElementById('levelupNum').textContent = level;
+  document.getElementById('levelupSub').textContent =
+    `Les défis montent à ${Math.round(levelDifficulty(level) * 100)} % de tes capacités.`;
+  ov.classList.add('show');
+  burstConfetti();
+  if (navigator.vibrate) navigator.vibrate([20, 40, 30, 40, 60]);
+  // petit rebond sur le compteur de l'accueil
+  const heroNum = document.getElementById('levelHeroNum');
+  if (heroNum) { heroNum.classList.remove('bump'); void heroNum.offsetWidth; heroNum.classList.add('bump'); setTimeout(() => heroNum.classList.remove('bump'), 400); }
+  const close = () => ov.classList.remove('show');
+  ov.onclick = close;
+  setTimeout(close, 2600);
+}
+
+function burstConfetti() {
+  const colors = ['#ffd60a', '#ffffff', '#d4ad00', '#30d158', '#ff453a'];
+  const n = 90;
+  for (let i = 0; i < n; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = colors[i % colors.length];
+    const dur = 1.6 + Math.random() * 1.6;
+    c.style.animationDuration = dur + 's';
+    c.style.animationDelay = (Math.random() * 0.3) + 's';
+    if (Math.random() > 0.5) c.style.borderRadius = '50%';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), (dur + 0.4) * 1000);
+  }
 }
 
 function renderToday(s) {
@@ -2928,11 +3315,12 @@ function renderToday(s) {
     const unit = c.activity.unit === 'sec' ? 's' : '';
     const tag = c.activity.cat === 'pecs' ? 'Pecs' : c.activity.cat === 'haut' ? 'Haut' : c.activity.cat === 'bas' ? 'Bas' : 'Core';
     const incs = c.activity.unit === 'sec' ? [10, 20, 30] : [1, 5, 10];
+    const kbBadge = c.activity.kb ? `<span class="card-kb">${kbWeightOf(profile)} kg</span>` : '';
     return `
       <div class="card ${isDone ? 'done' : ''}" data-cid="${c.id}">
         <div class="card-row">
           <div class="card-name-wrap">
-            <div class="card-name" onclick="showActivityInfo('${c.id}')">${c.activity.name}</div>
+            <div class="card-name" onclick="showActivityInfo('${c.id}')">${c.activity.name}${kbBadge}</div>
             <button class="card-info" onclick="showActivityInfo('${c.id}')" aria-label="Infos">?</button>
           </div>
           <div class="card-tag">${tag}</div>
@@ -3610,13 +3998,27 @@ function renderProfile(s) {
   const sd = new Date(p.startDate);
   document.getElementById('profStart').textContent = sd.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   document.getElementById('profWeek').textContent = `${currentWeek()} sur 7`;
+
+  const kbInput = document.getElementById('profKb');
+  if (kbInput && document.activeElement !== kbInput) kbInput.value = kbWeightOf(p);
+
+  // Bloc niveau / XP
+  const li = s.levelInfo;
+  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setTxt('profLvlNum', li.level);
+  setTxt('profLvlXp', `${li.into} / ${li.span} XP · ${li.total} XP au total`);
+  const pf = document.getElementById('profLvlBar');
+  if (pf) pf.style.width = li.pct.toFixed(1) + '%';
+  setTxt('profLvlDiff', `${Math.round(levelDifficulty(li.level) * 100)} %`);
+
   const caps = computeCapacities(p);
-  const capOrder = ['pompes','bench','decline','fly','rowing','press','renegade','goblet','bulgarian','fentes','rdl','bridge','jumpsquats','gainage','deadbug','climbers','hollow'];
+  const capOrder = ['pompes','bench','decline','fly','rowing','press','renegade','kbswing','goblet','bulgarian','fentes','rdl','bridge','jumpsquats','gainage','kbtwist','deadbug','climbers','hollow'];
   document.getElementById('capGrid').innerHTML = capOrder.map(id => {
     const a = ACTIVITIES[id];
     const v = caps[id];
     const unit = a.unit === 'sec' ? 's' : '';
-    return `<div class="cap-cell"><div class="cap-num">${v}${unit}</div><div class="cap-name">${a.name}</div></div>`;
+    const kbMark = a.kb ? '<span class="cap-kb">KB</span>' : '';
+    return `<div class="cap-cell"><div class="cap-num">${v}${unit}</div><div class="cap-name">${a.name}${kbMark}</div></div>`;
   }).join('');
 }
 
@@ -3628,6 +4030,7 @@ function addReps(id, delta, event, dateOverride) {
   if (next === cur) return;
   reps[id] = next;
   STORE.set('reps_' + dk, reps);
+  invalidateXp();
 
   if (!dateOverride && delta > 0) {
     pulseTarget = { id, delta };
@@ -3637,7 +4040,8 @@ function addReps(id, delta, event, dateOverride) {
     const r = event.currentTarget.getBoundingClientRect();
     const a = ACTIVITIES[id];
     const u = a.unit === 'sec' ? 's' : '';
-    spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffd60a');
+    spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffffff');
+    spawnFloat(r.left + r.width / 2, r.top - 22, `+${delta * XP_PER_REP} XP`, '#ffd60a');
   }
   if (navigator.vibrate) navigator.vibrate(delta > 0 ? 8 : 6);
 
@@ -3656,11 +4060,13 @@ function validateChallenge(id, event, dateOverride) {
   const delta = c.target - cur;
   reps[id] = c.target;
   STORE.set('reps_' + dk, reps);
+  invalidateXp();
   if (!dateOverride) pulseTarget = { id, delta };
   if (event) {
     const r = event.currentTarget.getBoundingClientRect();
     const u = c.activity.unit === 'sec' ? 's' : '';
-    spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffd60a');
+    spawnFloat(r.left + r.width / 2, r.top - 4, `+${delta}${u}`, '#ffffff');
+    spawnFloat(r.left + r.width / 2, r.top - 22, `+${delta * XP_PER_REP} XP`, '#ffd60a');
     if (navigator.vibrate) navigator.vibrate(40);
   }
   if (dateOverride) renderPastDayContent(dateOverride);
@@ -3672,6 +4078,7 @@ function toggleRitual(id, dateOverride) {
   const wasOn = !!r[id];
   r[id] = !r[id];
   STORE.set('rituals_' + dk, r);
+  invalidateXp();
   if (!dateOverride && !wasOn) pulsedRitual = id;  // only animate when turning ON
   if (navigator.vibrate) navigator.vibrate(!wasOn ? 15 : 8);
   if (dateOverride) renderPastDayContent(dateOverride);
@@ -3896,15 +4303,16 @@ function renderPastDayContent(dateStr) {
 
 function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('on'));
-      t.classList.add('on');
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
-      document.getElementById('view-' + t.dataset.tab).classList.add('show');
-      window.scrollTo(0, 0);
-      renderAll();
-    });
+    t.addEventListener('click', () => switchTab(t.dataset.tab));
   });
+}
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
+  const view = document.getElementById('view-' + tab);
+  if (view) view.classList.add('show');
+  window.scrollTo(0, 0);
+  renderAll();
 }
 function setupInputs() {
   const photoInput = document.getElementById('photoFileInput');
@@ -3923,6 +4331,18 @@ function setupInputs() {
       renderAll();
     });
   });
+  const kbEl = document.getElementById('profKb');
+  if (kbEl) {
+    kbEl.addEventListener('change', () => {
+      const p = getProfile();
+      let v = parseFloat(kbEl.value);
+      if (!v || v < 4 || v > 48) { kbEl.value = kbWeightOf(p); return; }
+      p.kbWeight = v;
+      setProfile(p);
+      showToast('Kettlebell', `Calibré pour ${v} kg`);
+      renderAll();
+    });
+  }
   document.querySelectorAll('.modal-bg').forEach(bg => {
     bg.addEventListener('click', e => { if (e.target === bg) bg.classList.remove('show'); });
   });
@@ -3937,6 +4357,7 @@ function init() {
     setupInputs();
     const s = aggregate();
     lastAchSet = new Set(ACHIEVEMENTS.filter(a => a.check(s)).map(a => a.id));
+    lastLevel = s.levelInfo.level;
     renderAll();
   } else {
     renderOnbBar();
