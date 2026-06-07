@@ -2405,7 +2405,7 @@ button { cursor: pointer; }
           </div>
         </div>
         <div class="level-bar"><div class="level-bar-fill" id="profLvlBar" style="width:0%"></div></div>
-        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">30 %</b> de tes capacités. Plus tu montes de niveau, plus les défis sont costauds.</div>
+        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">30 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes séries ; chaque journée d'objectifs manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
       </div>
     </div>
 
@@ -2801,12 +2801,16 @@ function kbWeightOf(p) {
 }
 
 /* === SYSTÈME D'XP / NIVEAU ===
-   L'XP est dérivée de stats monotones (jamais décroissantes) pour éviter tout
-   "dé-level" : reps loggées, rituels validés, pesées. Le niveau pilote la
-   difficulté des défis (voir levelDifficulty), affiché en grand sur l'accueil. */
+   On gagne de l'XP en faisant ses séries (reps), ses rituels et ses pesées, et
+   on en PERD un peu pour chaque jour passé où les objectifs ne sont pas remplis
+   (perte plus lente que le gain). L'XP est calculée jour après jour dans l'ordre
+   chronologique : la pénalité d'un jour n'affecte que les jours suivants, donc
+   pas de boucle ni d'instabilité. Le niveau pilote la difficulté des défis
+   (voir levelDifficulty) : redescendre de niveau allège les défis à refaire. */
 const XP_PER_REP    = 1;   // chaque rep / seconde d'effort
 const XP_PER_RITUAL = 6;   // chaque rituel validé
 const XP_PER_WEIGH  = 12;  // chaque pesée enregistrée
+const XP_DECAY_PER_DAY = 35; // XP retirée pour un jour passé d'objectifs entièrement manqué (proportionnel sinon)
 const LVL_BASE = 100;      // XP cumulée pour atteindre le niveau L = LVL_BASE * L^LVL_EXP
 const LVL_EXP  = 1.5;
 
@@ -2836,40 +2840,70 @@ let _xpCache = null;
 function invalidateXp() { _xpCache = null; }
 function getXpTimeline() {
   if (_xpCache) return _xpCache;
-  const repsByDate = {};    // date -> somme de toutes les reps/sec loggées ce jour
-  const ritByDate  = {};    // date -> nb de rituels validés ce jour
+  const profile = getProfile();
+  if (!profile) { _xpCache = { xpBefore: {}, total: 0 }; return _xpCache; }
+
+  // Données brutes par date (indépendantes des objectifs, donc pas de récursion).
+  const repsObjByDate = {};
+  const ritByDate = {};
   STORE.all().forEach(k => {
     if (k.startsWith(KEY + 'reps_')) {
       const date = k.slice((KEY + 'reps_').length);
-      let sum = 0;
-      try {
-        const obj = JSON.parse(localStorage.getItem(k) || '{}');
-        for (const id in obj) { const v = obj[id]; if (typeof v === 'number' && v > 0) sum += v; }
-      } catch (e) {}
-      repsByDate[date] = (repsByDate[date] || 0) + sum;
+      try { repsObjByDate[date] = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) { repsObjByDate[date] = {}; }
     } else if (k.startsWith(KEY + 'rituals_')) {
       const date = k.slice((KEY + 'rituals_').length);
       let n = 0;
-      try {
-        const obj = JSON.parse(localStorage.getItem(k) || '{}');
-        for (const id in obj) { if (obj[id]) n++; }
-      } catch (e) {}
-      ritByDate[date] = (ritByDate[date] || 0) + n;
+      try { const obj = JSON.parse(localStorage.getItem(k) || '{}'); for (const id in obj) { if (obj[id]) n++; } } catch (e) {}
+      ritByDate[date] = n;
     }
   });
   const weighCount = (STORE.get('weights', []) || []).length;
 
-  const dates = Array.from(new Set([...Object.keys(repsByDate), ...Object.keys(ritByDate)])).sort();
-  const xpBefore = {};   // XP cumulée STRICTEMENT avant ce jour (gèle la difficulté du jour)
-  let running = 0;
-  dates.forEach(date => {
-    xpBefore[date] = running;
-    running += (repsByDate[date] || 0) * XP_PER_REP + (ritByDate[date] || 0) * XP_PER_RITUAL;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = new Date(profile.startDate + 'T00:00:00'); start.setHours(0, 0, 0, 0);
+  // La perte d'XP démarre à la création du compte (decayStart). Pour un compte
+  // déjà existant, decayStart est fixé au jour d'adoption (cf. init) afin de ne
+  // pas pénaliser rétroactivement les anciennes séances.
+  const decayStr = profile.decayStart || profile.startDate;
+  const decayStart = new Date(decayStr + 'T00:00:00'); decayStart.setHours(0, 0, 0, 0);
+  const restDayConfig = (profile.restDay !== undefined) ? profile.restDay : 0;
+
+  // On balaie tout le calendrier (start..aujourd'hui) pour aussi compter les
+  // jours entièrement sautés (aucune donnée), pas seulement les jours loggés.
+  let begin = new Date(start);
+  Object.keys(repsObjByDate).concat(Object.keys(ritByDate)).forEach(ds => {
+    const d = new Date(ds + 'T00:00:00'); if (d < begin) begin = d;
   });
-  // Les pesées comptent dans le total courant (pas attribuées à un jour de défi précis).
+
+  const xpBefore = {};   // XP gelée AVANT ce jour -> fige la difficulté du jour
+  let running = 0;
+  let d = new Date(begin);
+  while (d <= today) {
+    const dk = dateKey(d);
+    xpBefore[dk] = running;
+    const levelBefore = levelFromXp(running).level;
+
+    const repsObj = repsObjByDate[dk] || {};
+    let repSum = 0;
+    for (const id in repsObj) { const v = repsObj[id]; if (typeof v === 'number' && v > 0) repSum += v; }
+    running += repSum * XP_PER_REP + (ritByDate[dk] || 0) * XP_PER_RITUAL;
+
+    // Pénalité : jour passé, dans le programme, hors jour de repos, objectifs non remplis.
+    const isRest = d.getDay() === restDayConfig;
+    if (d < today && d >= decayStart && !isRest) {
+      const ch = dailyChallengesAtLevel(dk, levelBefore);
+      let comp = 0;
+      ch.forEach(c => { comp += Math.min(1, (repsObj[c.id] || 0) / c.target); });
+      const completion = ch.length ? comp / ch.length : 1;
+      running -= XP_DECAY_PER_DAY * (1 - completion);
+      if (running < 0) running = 0;
+    }
+    d = addDays(d, 1);
+  }
+  // Les pesées comptent comme un bonus dans le total courant.
   const total = running + weighCount * XP_PER_WEIGH;
 
-  _xpCache = { xpBefore, total, dates };
+  _xpCache = { xpBefore, total };
   return _xpCache;
 }
 
@@ -2903,14 +2937,15 @@ function adaptationFactor(date) {
   return 1.0;
 }
 
-function pickDailyChallenges(date) {
+// Défis d'un jour pour un niveau DONNÉ (pur, sans cache) -> utilisé par la
+// timeline d'XP sans créer de récursion.
+function dailyChallengesAtLevel(date, level) {
   const profile = getProfile();
   if (!profile) return [];
   const caps = computeCapacities(profile);
   const dk = typeof date === 'string' ? date : dateKey(date);
   const dObj = new Date(dk + 'T00:00:00');
-  // La difficulté est pilotée par le NIVEAU (gelé au début du jour pour rester stable).
-  const lvlFactor = levelDifficulty(levelForDate(dk));
+  const lvlFactor = levelDifficulty(level);
 
   let s = parseInt(dk.replace(/-/g,''), 10);
   function next() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; }
@@ -2928,6 +2963,12 @@ function pickDailyChallenges(date) {
     target = Math.max(a.unit === 'sec' ? 10 : 3, target);
     return { id, activity: a, target, adapt };
   });
+}
+
+// La difficulté est pilotée par le NIVEAU gelé au début du jour (stable).
+function pickDailyChallenges(date) {
+  const dk = typeof date === 'string' ? date : dateKey(date);
+  return dailyChallengesAtLevel(dk, levelForDate(dk));
 }
 
 function aggregate() {
@@ -3173,7 +3214,7 @@ function renderOnbRecap() {
   rec.innerHTML = h;
 }
 function finishOnboarding() {
-  const profile = { ...onbData, startDate: todayKey() };
+  const profile = { ...onbData, startDate: todayKey(), decayStart: todayKey() };
   setProfile(profile);
   document.getElementById('onb').classList.add('hide');
   document.getElementById('app').style.display = 'block';
@@ -3208,9 +3249,10 @@ function renderAll() {
   }
   lastAchSet = cur;
 
-  // Détection de montée de niveau -> célébration
+  // Détection de changement de niveau : montée -> célébration, descente -> rappel doux
   const lvl = s.levelInfo.level;
   if (lastLevel !== null && lvl > lastLevel) celebrateLevelUp(lvl);
+  else if (lastLevel !== null && lvl < lastLevel) showToast('Niveau', `Tu redescends au niveau ${lvl} — les défis s'allègent, reprends le rythme`);
   lastLevel = lvl;
 }
 
@@ -4355,6 +4397,10 @@ function init() {
     document.getElementById('tabs').style.display = 'flex';
     setupTabs();
     setupInputs();
+    // Comptes créés avant la perte d'XP : on fixe le départ de la décroissance
+    // à aujourd'hui pour ne pas pénaliser les anciennes séances pré-kettlebell.
+    const mp = getProfile();
+    if (mp && !mp.decayStart) { mp.decayStart = todayKey(); setProfile(mp); }
     const s = aggregate();
     lastAchSet = new Set(ACHIEVEMENTS.filter(a => a.check(s)).map(a => a.id));
     lastLevel = s.levelInfo.level;
