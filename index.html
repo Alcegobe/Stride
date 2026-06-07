@@ -36,6 +36,9 @@
 
   --positive: #30d158;
   --negative: #ff453a;
+
+  /* Rayon des coins, volontairement discret pour un rendu plus carré / cohérent */
+  --radius: 8px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -384,6 +387,7 @@ button { cursor: pointer; }
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 20px 20px 16px;
   margin-bottom: 8px;
   transition: border-color 0.25s;
@@ -1585,7 +1589,7 @@ button { cursor: pointer; }
   padding: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   color: var(--accent);
   font-size: 14px;
   font-weight: 600;
@@ -1674,6 +1678,7 @@ button { cursor: pointer; }
   align-items: center;
   justify-content: space-between;
   border: none;
+  border-radius: var(--radius);
   transition: opacity 0.15s;
 }
 .session-cta:active { opacity: 0.75; }
@@ -1739,7 +1744,7 @@ button { cursor: pointer; }
   margin-top: 18px;
   padding: 10px 16px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius);
   color: var(--accent);
   font-size: 13px;
   font-weight: 600;
@@ -1955,7 +1960,7 @@ button { cursor: pointer; }
   position: relative;
   margin: 4px 0 18px;
   padding: 18px 18px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius);
   background:
     radial-gradient(120% 120% at 50% -20%, rgba(255,214,10,0.18), transparent 60%),
     linear-gradient(180deg, var(--surface-2), var(--surface));
@@ -2030,7 +2035,7 @@ button { cursor: pointer; }
 /* Bloc niveau dans le Profil */
 .prof-level {
   padding: 16px;
-  border-radius: 16px;
+  border-radius: var(--radius);
   background: linear-gradient(180deg, var(--surface-2), var(--surface));
   border: 1px solid var(--border-2);
 }
