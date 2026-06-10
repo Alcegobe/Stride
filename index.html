@@ -1937,6 +1937,46 @@ button { cursor: pointer; }
 }
 .modal-actions .btn-inline { flex: 1; padding: 14px; }
 
+/* Conseils séries/repos et régressions-progressions */
+.card-sets {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: -8px 0 12px;
+}
+.session-sets {
+  font-size: 13px;
+  color: var(--text-2);
+  margin: -4px 0 16px;
+}
+.session-tips {
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: var(--text-3);
+  line-height: 1.5;
+}
+.session-tips b { color: var(--text-2); font-weight: 600; }
+
+/* Listes échauffement / retour au calme du mode séance */
+.session-list { margin: 6px 0 10px; }
+.session-list-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+  line-height: 1.4;
+}
+.session-list-item:last-child { border-bottom: none; }
+.session-list-item .n {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  flex: 0 0 38px;
+  padding-top: 2px;
+}
+.session-list-item .d { color: var(--text-2); }
+
 /* Desktop framing — cadre centré ≥ 768px (mobile inchangé) */
 @media (min-width: 768px) {
   .onb, .tabs {
@@ -2271,7 +2311,7 @@ button { cursor: pointer; }
   <section class="onb-step" data-step="10">
     <div class="onb-count">Tout est prêt</div>
     <h1 class="onb-q">Ton <em>programme</em>.</h1>
-    <p class="onb-hint">Estimation basée sur ton profil et ta kettlebell. Démarrage doux à 30 % de ces capacités (niveau 0), puis la difficulté monte à chaque niveau gagné.</p>
+    <p class="onb-hint">Estimation basée sur ton profil et ta kettlebell. Démarrage à 35 % de ces capacités (niveau 0), puis la difficulté monte à chaque niveau gagné.</p>
     <div class="onb-recap" id="obRecap"></div>
     <div class="onb-field"></div>
     <div class="onb-nav">
@@ -2408,7 +2448,7 @@ button { cursor: pointer; }
           </div>
         </div>
         <div class="level-bar"><div class="level-bar-fill" id="profLvlBar" style="width:0%"></div></div>
-        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">30 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes séries ; chaque journée d'objectifs manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
+        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">35 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes séries ; chaque journée d'objectifs manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
       </div>
     </div>
 
@@ -2417,7 +2457,7 @@ button { cursor: pointer; }
         <div class="sec-title">Capacités estimées</div>
       </div>
       <div class="capacities">
-        <div class="capacities-sub">Tes max estimés avec ta kettlebell. Les défis du jour partent de 30 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
+        <div class="capacities-sub">Tes max estimés avec ta kettlebell. Les défis du jour partent de 35 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
         <div class="cap-grid" id="capGrid"></div>
       </div>
     </div>
@@ -2546,7 +2586,10 @@ button { cursor: pointer; }
     <div class="session-rest-label">Repos</div>
     <div class="session-rest-num" id="sessionRestNum">60</div>
     <div class="session-rest-unit">Secondes</div>
-    <button class="session-rest-skip" onclick="skipRest()">Passer</button>
+    <div style="display:flex;gap:8px;">
+      <button class="session-rest-skip" onclick="extendRest(30)">+30 s</button>
+      <button class="session-rest-skip" onclick="skipRest()">Passer</button>
+    </div>
   </div>
 </div>
 
@@ -2554,31 +2597,33 @@ button { cursor: pointer; }
 
 const ACTIVITIES = {
   // PECS — poitrine (poids du corps + kettlebell)
-  pompes:     { name: 'Pompes',                   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 25, desc: "Position planche, mains largeur d'épaules. Descends jusqu'à frôler le sol, remonte sans bloquer les coudes. Trop dur ? Mains sur une chaise (inclinées), ou sur les genoux." },
-  bench:      { name: 'Floor press kettlebell',   cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains au niveau de la poitrine, coudes posés au sol. Pousse la cloche au plafond sans verrouiller les coudes, redescends jusqu'à ce que les triceps touchent le sol. Cible : pectoraux et triceps." },
-  decline:    { name: 'Pompes pieds surélevés',   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 18, desc: "Pieds surélevés sur une chaise ou un canapé, mains au sol largeur d'épaules. Même technique que les pompes classiques, mais plus dur : l'accent passe sur le haut des pectoraux et les épaules. Si trop dur, fais des pompes classiques au sol." },
-  fly:        { name: 'Pull-over kettlebell',     cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains bras tendus au-dessus de la poitrine. Descends lentement la cloche derrière la tête, bras quasi tendus, jusqu'à sentir l'étirement, puis ramène au-dessus de la poitrine. Gaine fort, ne cambre pas." },
+  // easier/harder : comment ajuster la difficulté avec UNE seule cloche (tempo,
+  // pauses, unilatéral, levier) — pas besoin d'acheter d'autres charges.
+  pompes:     { name: 'Pompes',                   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 25, desc: "Position planche, mains largeur d'épaules. Descends jusqu'à frôler le sol, remonte sans bloquer les coudes.", easier: "Mains sur une chaise (inclinées) ou pompes sur les genoux.", harder: "Descente lente en 3 s, ou pause 1 s poitrine au sol." },
+  bench:      { name: 'Floor press kettlebell',   cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains au niveau de la poitrine, coudes posés au sol. Pousse la cloche au plafond sans verrouiller les coudes, redescends jusqu'à ce que les triceps touchent le sol. Cible : pectoraux et triceps.", easier: "Réduis l'amplitude et fais des séries plus courtes.", harder: "À un bras (cloche d'un seul côté, total des 2 côtés), ou descente en 3 s." },
+  decline:    { name: 'Pompes pieds surélevés',   cat: 'pecs', unit: 'reps', kb: false, baseFactor: 18, desc: "Pieds surélevés sur une chaise ou un canapé, mains au sol largeur d'épaules. Même technique que les pompes classiques, mais plus dur : l'accent passe sur le haut des pectoraux et les épaules.", easier: "Pompes classiques au sol.", harder: "Pause 1 s en bas, ou pieds encore plus hauts." },
+  fly:        { name: 'Pull-over kettlebell',     cat: 'pecs', unit: 'reps', kb: true,  baseFactor: 16, desc: "Allongé au sol, kettlebell tenue à deux mains bras tendus au-dessus de la poitrine. Descends lentement la cloche derrière la tête, bras quasi tendus, jusqu'à sentir l'étirement, puis ramène au-dessus de la poitrine. Gaine fort, ne cambre pas.", easier: "Plie davantage les coudes pour raccourcir le levier.", harder: "Bras plus tendus, descente en 3 s." },
 
   // HAUT — épaules / dos (kettlebell)
-  rowing:     { name: 'Rowing kettlebell 1 bras', cat: 'haut', unit: 'reps', kb: true,  baseFactor: 24, desc: "Une main et un genou en appui sur une chaise, dos parallèle au sol, kettlebell dans l'autre main bras tendu. Tire la cloche vers la hanche, coude le long du corps, omoplate rétractée. Total des 2 côtés." },
-  press:      { name: 'Développé militaire KB',   cat: 'haut', unit: 'reps', kb: true,  baseFactor: 16, desc: "Debout, kettlebell en rack contre l'avant-bras au niveau de l'épaule. Gaine fort les abdos, pousse droit au-dessus de la tête sans cambrer le bas du dos. Redescends en contrôle. Total des 2 côtés." },
-  renegade:   { name: 'Renegade row kettlebell',  cat: 'haut', unit: 'reps', kb: true,  baseFactor: 14, desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main. Le défi : garder le bassin immobile. Total des 2 côtés." },
+  rowing:     { name: 'Rowing kettlebell 1 bras', cat: 'haut', unit: 'reps', kb: true,  baseFactor: 24, desc: "Une main et un genou en appui sur une chaise, dos parallèle au sol, kettlebell dans l'autre main bras tendu. Tire la cloche vers la hanche, coude le long du corps, omoplate rétractée. Total des 2 côtés.", easier: "Pose la cloche au sol entre chaque rep pour repartir de zéro.", harder: "Pause 1 s en haut omoplate serrée, descente lente." },
+  press:      { name: 'Développé militaire KB',   cat: 'haut', unit: 'reps', kb: true,  baseFactor: 16, desc: "Debout, kettlebell en rack contre l'avant-bras au niveau de l'épaule. Gaine fort les abdos, pousse droit au-dessus de la tête sans cambrer le bas du dos. Redescends en contrôle. Total des 2 côtés.", easier: "Aide-toi d'une légère impulsion des jambes (push press), ou presse à deux mains devant la poitrine.", harder: "Strict sans aucune aide des jambes, descente en 3 s." },
+  renegade:   { name: 'Renegade row kettlebell',  cat: 'haut', unit: 'reps', kb: true,  baseFactor: 14, desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main. Le défi : garder le bassin immobile. Total des 2 côtés.", easier: "Pieds très écartés, ou rowing classique penché sans la planche.", harder: "Pieds serrés, pause 1 s en haut." },
 
   // BAS — jambes / fessiers (kettlebell + poids du corps)
-  kbswing:    { name: 'Kettlebell swing',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 30, desc: "Pieds largeur d'épaules, kettlebell devant toi. Pousse les hanches en arrière, attrape la cloche et propulse-la à hauteur des épaules par une extension explosive des hanches (pas avec les bras). Le dos reste droit. C'est le mouvement signature de la kettlebell." },
-  goblet:     { name: 'Goblet squat',             cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 20, desc: "Tiens la kettlebell verticalement contre la poitrine, coudes pointés vers le bas. Squat profond, dos droit, talons au sol. Coudes entre les genoux en position basse, puis remonte en poussant dans les talons." },
-  bulgarian:  { name: 'Fente bulgare kettlebell', cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Pied arrière sur une chaise, jambe avant à 60 cm, kettlebell tenue contre la poitrine. Descends verticalement jusqu'à 90° au genou avant. Tronc droit. Total des 2 côtés." },
-  fentes:     { name: 'Fente kettlebell',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Kettlebell tenue contre la poitrine (goblet) ou en rack. Pas en avant, descends jusqu'à 90° au genou avant, genou arrière effleure le sol. Tronc droit. Total des 2 jambes." },
-  rdl:        { name: 'Soulevé roumain KB',       cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 22, desc: "Debout, kettlebell tenue à deux mains devant les cuisses. Pousse les fesses en arrière, descends la cloche le long des jambes sans arrondir le dos, légère flexion des genoux. Remonte en contractant les fessiers." },
-  bridge:     { name: 'Hip thrust lesté',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 28, desc: "Allongé sur le dos, pieds au sol, kettlebell posée sur le bas-ventre (tenue à deux mains). Pousse les hanches vers le haut en serrant fort les fessiers, aligne épaule-hanche-genou en haut, pause une seconde, redescends en contrôle." },
-  jumpsquats: { name: 'Squats sautés',            cat: 'bas',  unit: 'reps', kb: false, baseFactor: 20, desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, enchaîne directement. Genoux alignés avec les pieds à l'atterrissage." },
+  kbswing:    { name: 'Kettlebell swing',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 30, desc: "Pieds largeur d'épaules, kettlebell devant toi. Pousse les hanches en arrière, attrape la cloche et propulse-la à hauteur des épaules par une extension explosive des hanches (pas avec les bras). Le dos reste droit. C'est le mouvement signature de la kettlebell.", easier: "Swings plus courts (hauteur du nombril) et séries plus petites.", harder: "Swing à un bras en alternant à chaque rep, ou séries longues sans poser." },
+  goblet:     { name: 'Goblet squat',             cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 20, desc: "Tiens la kettlebell verticalement contre la poitrine, coudes pointés vers le bas. Squat profond, dos droit, talons au sol. Coudes entre les genoux en position basse, puis remonte en poussant dans les talons.", easier: "Squat au poids du corps, ou amplitude réduite.", harder: "Pause 2 s en position basse, ou descente en 3 s." },
+  bulgarian:  { name: 'Fente bulgare kettlebell', cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Pied arrière sur une chaise, jambe avant à 60 cm, kettlebell tenue contre la poitrine. Descends verticalement jusqu'à 90° au genou avant. Tronc droit. Total des 2 côtés.", easier: "Sans kettlebell, ou fentes classiques au sol.", harder: "Pause 1 s en bas, descente lente." },
+  fentes:     { name: 'Fente kettlebell',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 18, desc: "Kettlebell tenue contre la poitrine (goblet) ou en rack. Pas en avant, descends jusqu'à 90° au genou avant, genou arrière effleure le sol. Tronc droit. Total des 2 jambes.", easier: "Sans kettlebell, au poids du corps.", harder: "Fentes marchées, ou pause 1 s en bas." },
+  rdl:        { name: 'Soulevé roumain KB',       cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 22, desc: "Debout, kettlebell tenue à deux mains devant les cuisses. Pousse les fesses en arrière, descends la cloche le long des jambes sans arrondir le dos, légère flexion des genoux. Remonte en contractant les fessiers.", easier: "Réduis l'amplitude (descends jusqu'aux genoux seulement).", harder: "À une jambe (l'autre part en arrière), ou descente en 3 s." },
+  bridge:     { name: 'Hip thrust lesté',         cat: 'bas',  unit: 'reps', kb: true,  baseFactor: 28, desc: "Allongé sur le dos, pieds au sol, kettlebell posée sur le bas-ventre (tenue à deux mains). Pousse les hanches vers le haut en serrant fort les fessiers, aligne épaule-hanche-genou en haut, pause une seconde, redescends en contrôle.", easier: "Sans kettlebell.", harder: "À une jambe, ou pause 2 s en haut à chaque rep." },
+  jumpsquats: { name: 'Squats sautés',            cat: 'bas',  unit: 'reps', kb: false, baseFactor: 20, desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, enchaîne directement. Genoux alignés avec les pieds à l'atterrissage.", easier: "Squats classiques rapides, sans saut.", harder: "Pause 1 s en position basse avant chaque saut." },
 
   // CORE — gainage / abdos (poids du corps + kettlebell)
-  gainage:    { name: 'Gainage',                  cat: 'core', unit: 'sec',  kb: false, baseFactor: 60, desc: "Avant-bras et pointes de pieds. Corps parfaitement aligné. Serre les fessiers, rentre le nombril, respire calmement. Ne laisse pas les hanches s'affaisser ni se relever." },
-  kbtwist:    { name: 'Russian twist kettlebell', cat: 'core', unit: 'reps', kb: true,  baseFactor: 30, desc: "Assis, buste incliné en arrière à 45°, talons décollés (ou au sol si trop dur), kettlebell tenue à deux mains devant le sternum. Pivote le buste pour amener la cloche d'un côté puis de l'autre. Chaque côté compte pour 1." },
-  deadbug:    { name: 'Dead bug',                 cat: 'core', unit: 'reps', kb: false, baseFactor: 16, desc: "Sur le dos, bras tendus vers le plafond, jambes en 'table' (genoux à 90°). Étends lentement bras gauche + jambe droite vers le sol sans toucher, reviens, alterne. Bas du dos collé au sol en permanence. Total des 2 côtés." },
-  climbers:   { name: 'Mountain climbers',        cat: 'core', unit: 'reps', kb: false, baseFactor: 30, desc: "Planche haute. Ramène un genou vers la poitrine, repose, alterne avec l'autre, rapide. Hanches stables (ne pas relever le fessier). Chaque genou compte pour 1." },
-  hollow:     { name: 'Hollow hold',              cat: 'core', unit: 'sec',  kb: false, baseFactor: 30, desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues. Bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique." }
+  gainage:    { name: 'Gainage',                  cat: 'core', unit: 'sec',  kb: false, baseFactor: 60, desc: "Avant-bras et pointes de pieds. Corps parfaitement aligné. Serre les fessiers, rentre le nombril, respire calmement. Ne laisse pas les hanches s'affaisser ni se relever.", easier: "Sur les genoux.", harder: "Lève alternativement un pied quelques secondes sans bouger le bassin." },
+  kbtwist:    { name: 'Russian twist kettlebell', cat: 'core', unit: 'reps', kb: true,  baseFactor: 30, desc: "Assis, buste incliné en arrière à 45°, talons décollés (ou au sol si trop dur), kettlebell tenue à deux mains devant le sternum. Pivote le buste pour amener la cloche d'un côté puis de l'autre. Chaque côté compte pour 1.", easier: "Talons au sol, ou sans kettlebell.", harder: "Talons décollés en permanence, rotation lente et contrôlée." },
+  deadbug:    { name: 'Dead bug',                 cat: 'core', unit: 'reps', kb: false, baseFactor: 16, desc: "Sur le dos, bras tendus vers le plafond, jambes en 'table' (genoux à 90°). Étends lentement bras gauche + jambe droite vers le sol sans toucher, reviens, alterne. Bas du dos collé au sol en permanence. Total des 2 côtés.", easier: "Bouge seulement les jambes, bras immobiles vers le plafond.", harder: "Tiens la kettlebell à bras tendus au-dessus de la poitrine pendant le mouvement." },
+  climbers:   { name: 'Mountain climbers',        cat: 'core', unit: 'reps', kb: false, baseFactor: 30, desc: "Planche haute. Ramène un genou vers la poitrine, repose, alterne avec l'autre, rapide. Hanches stables (ne pas relever le fessier). Chaque genou compte pour 1.", easier: "Ralentis le rythme, ou mains sur une chaise.", harder: "Accélère, ou amène le genou vers le coude opposé." },
+  hollow:     { name: 'Hollow hold',              cat: 'core', unit: 'sec',  kb: false, baseFactor: 30, desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues. Bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique.", easier: "Genoux pliés, ou bras le long du corps.", harder: "Bras et jambes plus proches du sol, sans décoller les lombaires." }
 };
 
 const PECS = ['pompes','bench','decline','fly'];
@@ -2921,6 +2966,47 @@ function adaptationFactor(date) {
   return 1.0;
 }
 
+// Tirage brut des 4 exercices d'un jour, déterministe à partir de la date.
+function rawPicksFor(dk) {
+  let s = parseInt(dk.replace(/-/g,''), 10);
+  function next() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; }
+  function pick(arr) { return arr[next() % arr.length]; }
+  return { pecs: pick(PECS), haut: pick(HAUT), bas: pick(BAS), core: pick(CORE) };
+}
+
+// À partir de cette date, on évite de retomber sur l'exercice de la veille.
+// Les jours antérieurs gardent leur tirage historique pour ne pas réécrire la
+// timeline d'XP déjà jouée. Le tirage ajusté d'un jour dépend de celui de la
+// veille : on calcule la chaîne depuis la date charnière, avec mémoïsation
+// (fonction pure de la date, le cache n'a jamais besoin d'être invalidé).
+const VARIETY_SINCE = '2026-06-11';
+const _picksCache = Object.create(null);
+function picksFor(dk) {
+  if (dk < VARIETY_SINCE) return rawPicksFor(dk);
+  if (_picksCache[dk]) return _picksCache[dk];
+  const stack = [];
+  let cur = dk;
+  while (cur >= VARIETY_SINCE && !_picksCache[cur]) {
+    stack.push(cur);
+    cur = dateKey(addDays(new Date(cur + 'T00:00:00'), -1));
+  }
+  let prev = _picksCache[cur] || rawPicksFor(cur);
+  const pools = { pecs: PECS, haut: HAUT, bas: BAS, core: CORE };
+  while (stack.length) {
+    const day = stack.pop();
+    const p = rawPicksFor(day);
+    for (const cat in pools) {
+      if (p[cat] === prev[cat]) {
+        const arr = pools[cat];
+        p[cat] = arr[(arr.indexOf(p[cat]) + 1) % arr.length];
+      }
+    }
+    _picksCache[day] = p;
+    prev = p;
+  }
+  return _picksCache[dk];
+}
+
 // Défis d'un jour pour un niveau DONNÉ (pur, sans cache) -> utilisé par la
 // timeline d'XP sans créer de récursion.
 function dailyChallengesAtLevel(date, level) {
@@ -2931,22 +3017,29 @@ function dailyChallengesAtLevel(date, level) {
   const dObj = new Date(dk + 'T00:00:00');
   const lvlFactor = levelDifficulty(level);
 
-  let s = parseInt(dk.replace(/-/g,''), 10);
-  function next() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; }
-  function pick(arr) { return arr[next() % arr.length]; }
-
-  const pecs = pick(PECS);
-  const haut = pick(HAUT);
-  const bas  = pick(BAS);
-  const core = pick(CORE);
-
+  const picks = picksFor(dk);
   const adapt = adaptationFactor(dObj);
-  return [pecs, haut, bas, core].map(id => {
+  return [picks.pecs, picks.haut, picks.bas, picks.core].map(id => {
     const a = ACTIVITIES[id];
     let target = Math.round(caps[id] * lvlFactor * adapt);
     target = Math.max(a.unit === 'sec' ? 10 : 3, target);
     return { id, activity: a, target, adapt };
   });
+}
+
+// Découpage conseillé : un total brut ne dit pas comment s'y prendre. On vise
+// des séries de 10 reps max (40 s max pour les exos chronométrés).
+function suggestSets(target, unit) {
+  const perMax = unit === 'sec' ? 40 : 10;
+  if (target <= perMax) return null;
+  const sets = Math.min(6, Math.ceil(target / perMax));
+  return { sets, per: Math.ceil(target / sets) };
+}
+
+// Repos conseillé entre les séries selon le type d'effort.
+function restSecondsFor(a) {
+  if (a.kb) return 90;
+  return a.cat === 'core' ? 45 : 60;
 }
 
 // La difficulté est pilotée par le NIVEAU gelé au début du jour (stable).
@@ -3342,6 +3435,8 @@ function renderToday(s) {
     const tag = c.activity.cat === 'pecs' ? 'Pecs' : c.activity.cat === 'haut' ? 'Haut' : c.activity.cat === 'bas' ? 'Bas' : 'Core';
     const incs = c.activity.unit === 'sec' ? [10, 20, 30] : [1, 5, 10];
     const kbBadge = c.activity.kb ? `<span class="card-kb">${kbWeightOf(profile)} kg</span>` : '';
+    const tip = suggestSets(c.target, c.activity.unit);
+    const setsHtml = (tip && !isDone) ? `<div class="card-sets">Conseil : ${tip.sets} séries de ~${tip.per}${c.activity.unit === 'sec' ? ' s' : ' reps'} · repos ${restSecondsFor(c.activity)} s</div>` : '';
     return `
       <div class="card ${isDone ? 'done' : ''}" data-cid="${c.id}">
         <div class="card-row">
@@ -3357,6 +3452,7 @@ function renderToday(s) {
           <span class="tgt">${c.target}</span>
           <span class="card-unit">${c.activity.unit === 'sec' ? 'secondes' : 'reps'}</span>
         </div>
+        ${setsHtml}
         <div class="bar"><div class="bar-fill" style="width:${pct}%"></div></div>
         <div class="actions">
           <button class="btn-a minus" onclick="addReps('${c.id}', -1, event)">−</button>
@@ -3616,11 +3712,41 @@ function deletePhoto() {
 /* === MODE SÉANCE GUIDÉ === */
 let session = null;
 
+// Échauffement et retour au calme — 2-3 min sans matériel, surtout important
+// avant de charger la kettlebell à froid.
+const WARMUP = [
+  { n: '30 s', d: 'Montées de genoux ou jumping jacks — réveille le cardio' },
+  { n: '10×',  d: 'Cercles de bras, dans les deux sens' },
+  { n: '10×',  d: 'Rotations de hanches et de buste' },
+  { n: '10×',  d: 'Squats lents au poids du corps' },
+  { n: '10×',  d: 'Good mornings mains sur la nuque — réveille la chaîne postérieure' }
+];
+const COOLDOWN = [
+  { n: '20 s', d: 'Étirement des quadriceps debout, chaque jambe' },
+  { n: '20 s', d: 'Étirement des pectoraux contre un mur, chaque côté' },
+  { n: '20 s', d: 'Étirement des ischios jambe tendue, chaque côté' },
+  { n: '5×',   d: 'Respirations lentes et profondes pour redescendre' }
+];
+
+// Garde l'écran allumé pendant la séance (sinon le téléphone se verrouille
+// entre deux séries). Best effort : silencieux si l'API n'existe pas.
+let wakeLock = null;
+async function requestWakeLock() {
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function releaseWakeLock() {
+  try { if (wakeLock) { wakeLock.release(); wakeLock = null; } } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (session && document.visibilityState === 'visible') requestWakeLock();
+});
+
 function startSession() {
   const today = new Date();
   const challenges = pickDailyChallenges(today);
   if (!challenges || challenges.length === 0) return;
   session = {
+    stage: 'warmup',
     exoIndex: 0,
     challenges,
     restInterval: null,
@@ -3632,6 +3758,13 @@ function startSession() {
   const reps = STORE.get('reps_' + dk, {});
   challenges.forEach(c => { session.sessionStartReps[c.id] = reps[c.id] || 0; });
   document.getElementById('sessionOverlay').classList.add('show');
+  requestWakeLock();
+  renderSession();
+}
+
+function startExos() {
+  if (!session) return;
+  session.stage = 'exos';
   renderSession();
 }
 
@@ -3641,6 +3774,7 @@ function endSession() {
   }
   if (session && session.restInterval) clearInterval(session.restInterval);
   session = null;
+  releaseWakeLock();
   document.getElementById('sessionOverlay').classList.remove('show');
   document.getElementById('sessionRest').classList.remove('show');
   renderAll();
@@ -3650,6 +3784,22 @@ function renderSession() {
   if (!session) return;
   const body = document.getElementById('sessionBody');
   const nav = document.getElementById('sessionNav');
+
+  // Warm-up first
+  if (session.stage === 'warmup') {
+    document.getElementById('sessionPill').textContent = 'Échauffement';
+    body.innerHTML = `
+      <div class="session-tag">Avant de charger</div>
+      <div class="session-name">Échauffement express</div>
+      <div class="modal-text" style="margin-bottom:6px;">2-3 minutes pour préparer articulations et muscles — surtout avant la kettlebell à froid.</div>
+      <div class="session-list">${WARMUP.map(w => `<div class="session-list-item"><span class="n">${w.n}</span><span class="d">${w.d}</span></div>`).join('')}</div>
+    `;
+    nav.innerHTML = `
+      <button class="session-rest-btn" onclick="startExos()">Passer</button>
+      <button class="session-next-btn" onclick="startExos()">Échauffé · c'est parti →</button>
+    `;
+    return;
+  }
 
   // Finished?
   if (session.exoIndex >= session.challenges.length) {
@@ -3663,8 +3813,10 @@ function renderSession() {
       <div class="session-finish">
         <div class="tag">Séance terminée</div>
         <div class="head">+${totalAdded} reps de plus aujourd'hui.</div>
-        <div class="sub">Bien joué. Hydrate-toi, étire-toi, et passe à autre chose.</div>
+        <div class="sub">Bien joué. Hydrate-toi et prends 2 minutes pour le retour au calme ci-dessous.</div>
       </div>
+      <div class="session-tag" style="margin-top:8px;">Retour au calme</div>
+      <div class="session-list">${COOLDOWN.map(w => `<div class="session-list-item"><span class="n">${w.n}</span><span class="d">${w.d}</span></div>`).join('')}</div>
     `;
     nav.innerHTML = `<button class="session-next-btn" onclick="endSession()">Fermer</button>`;
     return;
@@ -3691,6 +3843,13 @@ function renderSession() {
   const unitLabel = unit === 'sec' ? 's' : '';
   const unitWord = unit === 'sec' ? 'Secondes' : 'Reps';
 
+  const tip = suggestSets(target, unit);
+  const restS = restSecondsFor(c.activity);
+  const setsHTML = tip ? `<div class="session-sets">Conseil : ${tip.sets} séries de ~${tip.per}${unit === 'sec' ? ' s' : ' reps'} · repos ${restS} s entre les séries</div>` : '';
+  const tipsHTML = (c.activity.easier || c.activity.harder)
+    ? `<div class="session-tips">${c.activity.easier ? `<b>Trop dur ?</b> ${c.activity.easier}` : ''}${c.activity.harder ? ` <b>Trop facile ?</b> ${c.activity.harder}` : ''}</div>`
+    : '';
+
   body.innerHTML = `
     <div class="session-tag">${catLabel}</div>
     <div class="session-name">${c.activity.name}</div>
@@ -3700,6 +3859,7 @@ function renderSession() {
       <span class="tgt">${target}</span>
       <span class="unit">${unitWord}</span>
     </div>
+    ${setsHTML}
     <div class="session-bar"><div class="session-bar-fill ${isDone ? 'done' : ''}" style="width:${pct}%"></div></div>
     <div class="session-actions">
       <button class="session-btn" onclick="sessionAdd('${c.id}', ${incs[0]})">+${incs[0]}${unitLabel}</button>
@@ -3707,11 +3867,12 @@ function renderSession() {
       <button class="session-btn" onclick="sessionAdd('${c.id}', ${incs[2]})">+${incs[2]}${unitLabel}</button>
     </div>
     ${ytHTML}
+    ${tipsHTML}
   `;
 
   const isLast = session.exoIndex === session.challenges.length - 1;
   nav.innerHTML = `
-    <button class="session-rest-btn" onclick="startRest(60)">Repos 60s</button>
+    <button class="session-rest-btn" onclick="startRest(${restS})">Repos ${restS}s</button>
     <button class="session-next-btn" onclick="sessionNextExo()">${isLast ? 'Terminer' : 'Suivant →'}</button>
   `;
 }
@@ -3763,6 +3924,12 @@ function updateRestDisplay() {
 }
 
 function skipRest() { stopRest(); }
+
+function extendRest(sec) {
+  if (!session || !session.restInterval) return;
+  session.restRemaining += sec;
+  updateRestDisplay();
+}
 
 function stopRest() {
   if (!session) return;
@@ -3945,7 +4112,33 @@ function renderProgress(s) {
         <span class="u">reps</span>
       </div>
       <div class="weight-diff">${s.daysTracked} jour${s.daysTracked > 1 ? 's' : ''} suivi${s.daysTracked > 1 ? 's' : ''} · ${s.challengesDone} défis bouclés</div>
+      ${renderWeeklyVolumeChart(monday)}
     </div>
+  `;
+}
+
+// Barres de volume hebdo (8 dernières semaines, semaine courante en jaune).
+function renderWeeklyVolumeChart(monday) {
+  const weeks = [];
+  for (let wIdx = 7; wIdx >= 0; wIdx--) {
+    const wkStart = addDays(monday, -7 * wIdx);
+    let sum = 0;
+    for (let i = 0; i < 7; i++) {
+      const rp = STORE.get('reps_' + dateKey(addDays(wkStart, i)), {});
+      for (const id in rp) { const v = rp[id]; if (typeof v === 'number' && v > 0) sum += v; }
+    }
+    weeks.push(sum);
+  }
+  if (weeks.every(v => v === 0)) return '';
+  const maxV = Math.max(...weeks, 1);
+  const bw = 320 / 8;
+  const bars = weeks.map((v, i) => {
+    const h = Math.max(v > 0 ? 3 : 1, Math.round(v / maxV * 80));
+    return `<rect x="${(i * bw + 6).toFixed(1)}" y="${96 - h}" width="${(bw - 12).toFixed(1)}" height="${h}" fill="${i === 7 ? '#ffd60a' : '#3a3a3a'}" />`;
+  }).join('');
+  return `
+    <div class="chart-head" style="margin-top:22px;"><div class="chart-title" style="font-size:13px;color:var(--text-2);">Reps par semaine</div><div class="chart-meta">8 dern. semaines</div></div>
+    <svg class="chart-svg" style="height:96px;" viewBox="0 0 320 100" preserveAspectRatio="none">${bars}</svg>
   `;
 }
 
@@ -4164,7 +4357,10 @@ function showActivityInfo(id) {
   const tag = a.cat === 'pecs' ? 'Pectoraux' : a.cat === 'haut' ? 'Haut du corps' : a.cat === 'bas' ? 'Bas du corps' : 'Core / Dos';
   document.getElementById('modalInfoTag').textContent = tag;
   document.getElementById('modalInfoTitle').textContent = a.name;
-  document.getElementById('modalInfoText').textContent = a.desc;
+  let infoHtml = a.desc;
+  if (a.easier) infoHtml += `<br><br><b>Trop dur ?</b> ${a.easier}`;
+  if (a.harder) infoHtml += `<br><b>Trop facile ?</b> ${a.harder}`;
+  document.getElementById('modalInfoText').innerHTML = infoHtml;
   document.getElementById('modalInfoYt').href = ytSearchUrl(a);
   openModal('modalInfo');
 }
