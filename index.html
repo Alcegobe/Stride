@@ -2813,9 +2813,9 @@ function levelFromXp(xp) {
   return { level, total: xp, into, span, nextXp, toNext: nextXp - xp, pct: Math.min(100, into / span * 100) };
 }
 
-// La difficulté monte avec le niveau : démarrage doux à 30 % des capacités (niveau 0),
+// La difficulté monte avec le niveau : démarrage à 35 % des capacités (niveau 0),
 // +5 % par niveau, plafonné à 160 %.
-function levelDifficulty(level) { return Math.min(1.6, 0.30 + level * 0.05); }
+function levelDifficulty(level) { return Math.min(1.6, 0.35 + level * 0.05); }
 
 // Timeline d'XP par date, calculée uniquement à partir de stats monotones et
 // INDÉPENDANTES des objectifs du jour (pas d'appel à pickDailyChallenges) afin
