@@ -1,7 +1,7 @@
 {
   "name": "Stride",
   "short_name": "Stride",
-  "description": "Programme fitness 7 semaines — defis quotidiens et rituels.",
+  "description": "Defis quotidiens kettlebell + poids du corps, avec niveau et XP.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
