@@ -13,7 +13,7 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 - **Minuteur de récup automatique** : un compte à rebours se lance à la fin de chaque série (bip + vibration à la reprise), avec bouton **Passer**.
 - **L'écran reste allumé** pendant la séance (Screen Wake Lock), relâché une fois les défis bouclés ou en quittant l'onglet.
 - **Nombre de répétitions précis** : pour les mouvements unilatéraux/alternés, la cible est un *total* et l'app indique « X au total · Y de chaque côté ».
-- Chaque exercice a une **fiche** (image, description, version plus facile / plus dure, lien démo vidéo). Images servies via [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (CDN jsDelivr), avec repli sur le texte si hors-ligne.
+- Chaque exercice a une **fiche** (animation, description, version plus facile / plus dure, lien démo vidéo). Animations (GIF) servies via [ExerciseGymGifsDB](https://github.com/JahelCuadrado/ExerciseGymGifsDB) (CDN jsDelivr), avec repli sur le texte si hors-ligne.
 - Une fois les 4 défis bouclés : **un mot d'encouragement spécifique au niveau** + confettis.
 - Pas d'échauffement imposé : c'est à toi d'y penser.
 

@@ -145,7 +145,7 @@ button { cursor: pointer; }
 
 /* === CARTE DÉFI === */
 .ch-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius); overflow: hidden; animation: fade 0.25s ease-out; }
-.ch-img { width: 100%; height: 200px; object-fit: cover; object-position: center center; background: var(--surface-2); display: block; }
+.ch-img { width: 100%; height: 210px; object-fit: contain; object-position: center center; background: #ffffff; display: block; }
 .ch-body { padding: 20px 20px 18px; }
 .ch-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 4px; }
 .ch-name-wrap { display: flex; align-items: center; gap: 9px; min-width: 0; }
@@ -315,7 +315,7 @@ button { cursor: pointer; }
 .modal { background: var(--bg); border-top: 1px solid var(--border-2); padding: 24px 22px calc(28px + env(safe-area-inset-bottom)); max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; animation: slideup 0.3s cubic-bezier(.2,.8,.2,1); }
 @keyframes slideup { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-tag { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.2em; color: var(--text-3); text-transform: uppercase; margin-bottom: 10px; font-weight: 600; }
-.modal-img { width: 100%; height: 220px; object-fit: cover; object-position: center center; background: var(--surface-2); border-radius: var(--radius); margin-bottom: 16px; }
+.modal-img { width: 100%; height: 220px; object-fit: contain; object-position: center center; background: #ffffff; border-radius: var(--radius); margin-bottom: 16px; }
 .modal-title { font-size: 24px; line-height: 1.15; letter-spacing: -0.025em; font-weight: 600; margin-bottom: 14px; }
 .modal-text { font-size: 14px; color: var(--text-2); line-height: 1.6; margin-bottom: 18px; }
 .modal-text b { color: var(--text); font-weight: 600; }
@@ -330,7 +330,7 @@ button { cursor: pointer; }
 /* === TEST D'ÉVALUATION === */
 .calib-intro { font-size: 14px; line-height: 1.55; color: var(--text-2); }
 .calib-intro b { color: var(--text); font-weight: 600; }
-.calib-img { width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius); background: var(--surface-2); margin: 4px 0 14px; }
+.calib-img { width: 100%; height: 160px; object-fit: contain; border-radius: var(--radius); background: #ffffff; margin: 4px 0 14px; }
 .calib-desc { font-size: 13px; line-height: 1.5; color: var(--text-3); margin-bottom: 16px; }
 .calib-q { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 2px; }
 .calib-side { font-size: 13px; color: var(--accent); font-weight: 500; }
@@ -544,79 +544,80 @@ function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate()+n); return
 /* === EXERCICES ===
    perSide=true : mouvement unilatéral / alterné. La CIBLE est un TOTAL
    (les deux côtés réunis) ; l'app affiche « X au total · Y de chaque côté ».
-   img : dossier de l'image (free-exercise-db) servie via jsDelivr. */
-const IMG_BASE = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/';
-function exImg(a) { return a.img ? IMG_BASE + a.img + '/0.jpg' : ''; }
+   img : chemin de l'animation (ExerciseGymGifsDB, « muscle/slug.gif »)
+   servie via jsDelivr ; repli sur le texte si hors-ligne. */
+const IMG_BASE = 'https://cdn.jsdelivr.net/gh/JahelCuadrado/ExerciseGymGifsDB@main/';
+function exImg(a) { return a.img ? IMG_BASE + a.img : ''; }
 
 const ACTIVITIES = {
   // PECS — pompes tous les jours (les pectoraux à la kettlebell, c'est galère).
-  pompes: { name: 'Pompes', cat: 'pecs', unit: 'reps', kb: false, perSide: false, baseFactor: 25, img: 'Pushups',
+  pompes: { name: 'Pompes', cat: 'pecs', unit: 'reps', kb: false, perSide: false, baseFactor: 25, img: 'pectorals/push-up.gif',
     desc: "Position planche, mains un peu plus larges que les épaules, corps gainé d'un bloc. Descends la poitrine jusqu'à frôler le sol, coudes à ~45° du corps, puis remonte sans verrouiller les coudes.",
     easier: "Mains surélevées sur une chaise (plus c'est haut, plus c'est facile), ou pompes sur les genoux.",
     harder: "Descente lente en 3 s, pause 1 s poitrine au sol, ou pieds surélevés." },
 
   // HAUT — épaules / dos (kettlebell)
-  rowing: { name: 'Rowing kettlebell 1 bras', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 24, img: 'One-Arm_Kettlebell_Row',
+  rowing: { name: 'Rowing kettlebell 1 bras', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 24, img: 'upper-back/kettlebell-one-arm-row.gif',
     desc: "Une main et un genou en appui sur une chaise, dos à plat parallèle au sol, kettlebell dans la main libre bras tendu. Tire la cloche vers la hanche, coude le long du corps, omoplate serrée.",
     easier: "Repose la cloche au sol entre chaque rep pour repartir propre.",
     harder: "Pause 1 s en haut omoplate serrée, descente lente en 3 s." },
-  press: { name: 'Développé militaire KB', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 16, img: 'One-Arm_Kettlebell_Push_Press',
+  press: { name: 'Développé militaire KB', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 16, img: 'delts/dumbbell-push-press.gif',
     desc: "Debout, kettlebell en rack contre l'avant-bras au niveau de l'épaule. Gaine fort les abdos, pousse droit au-dessus de la tête sans cambrer le bas du dos. Redescends en contrôle.",
     easier: "Aide-toi d'une légère impulsion des jambes (push press).",
     harder: "Strict, sans aucune aide des jambes, descente en 3 s." },
-  renegade: { name: 'Renegade row kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 14, img: 'Alternating_Renegade_Row',
+  renegade: { name: 'Renegade row kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 14, img: 'upper-back/kettlebell-alternating-renegade-row.gif',
     desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main.",
     easier: "Pieds très écartés, ou rowing penché classique sans la planche.",
     harder: "Pieds serrés, pause 1 s en haut." },
 
   // BAS — jambes / fessiers (kettlebell + poids du corps)
-  kbswing: { name: 'Kettlebell swing', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 30, img: 'One-Arm_Kettlebell_Swings',
+  kbswing: { name: 'Kettlebell swing', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 30, img: 'glutes/kettlebell-swing.gif',
     desc: "Pieds largeur d'épaules, cloche devant toi. Pousse les hanches en arrière puis propulse la kettlebell à hauteur des épaules par une extension explosive des hanches (pas avec les bras). Dos droit.",
     easier: "Swings plus courts (hauteur du nombril), séries plus petites.",
     harder: "Swing à un bras en alternant, ou séries longues sans poser." },
-  goblet: { name: 'Goblet squat', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 20, img: 'Goblet_Squat',
+  goblet: { name: 'Goblet squat', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 20, img: 'glutes/kettlebell-goblet-squat.gif',
     desc: "Tiens la kettlebell verticalement contre la poitrine, coudes vers le bas. Squat profond, dos droit, talons au sol, coudes entre les genoux en bas, puis remonte en poussant dans les talons.",
     easier: "Squat au poids du corps, ou amplitude réduite.",
     harder: "Pause 2 s en bas, ou descente lente en 3 s." },
-  bulgarian: { name: 'Fente bulgare kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: true, baseFactor: 18, img: 'Split_Squats',
+  bulgarian: { name: 'Fente bulgare kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: true, baseFactor: 18, img: 'quads/dumbbell-single-leg-split-squat.gif',
     desc: "Pied arrière posé sur une chaise, jambe avant à ~60 cm, kettlebell tenue contre la poitrine. Descends verticalement jusqu'à 90° au genou avant, tronc droit, puis remonte.",
     easier: "Sans kettlebell, ou fentes classiques au sol.",
     harder: "Pause 1 s en bas, descente lente." },
-  fentes: { name: 'Fente kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: true, baseFactor: 18, img: 'Dumbbell_Lunges',
+  fentes: { name: 'Fente kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: true, baseFactor: 18, img: 'glutes/dumbbell-lunge.gif',
     desc: "Kettlebell contre la poitrine (goblet). Pas en avant, descends jusqu'à 90° au genou avant, genou arrière qui effleure le sol, tronc droit, puis reviens.",
     easier: "Sans kettlebell, au poids du corps.",
     harder: "Fentes marchées, ou pause 1 s en bas." },
-  rdl: { name: 'Soulevé roumain KB', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 22, img: 'Romanian_Deadlift',
+  rdl: { name: 'Soulevé roumain KB', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 22, img: 'hamstrings/barbell-good-morning.gif',
     desc: "Debout, kettlebell tenue à deux mains devant les cuisses. Pousse les fesses en arrière, descends la cloche le long des jambes sans arrondir le dos, légère flexion des genoux, remonte en contractant les fessiers.",
     easier: "Réduis l'amplitude (descends jusqu'aux genoux seulement).",
     harder: "À une jambe, ou descente lente en 3 s." },
-  bridge: { name: 'Hip thrust lesté', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 28, img: 'Barbell_Hip_Thrust',
+  bridge: { name: 'Hip thrust lesté', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 28, img: 'glutes/barbell-glute-bridge.gif',
     desc: "Allongé sur le dos, pieds au sol, kettlebell posée sur le bas-ventre (tenue à deux mains). Pousse les hanches vers le haut en serrant fort les fessiers, aligne épaule-hanche-genou, pause 1 s, redescends.",
     easier: "Sans kettlebell.",
     harder: "À une jambe, ou pause 2 s en haut à chaque rep." },
-  jumpsquats: { name: 'Squats sautés', cat: 'bas', unit: 'reps', kb: false, perSide: false, baseFactor: 20, img: 'Freehand_Jump_Squat',
+  jumpsquats: { name: 'Squats sautés', cat: 'bas', unit: 'reps', kb: false, perSide: false, baseFactor: 20, img: 'glutes/jump-squat.gif',
     desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, genoux alignés avec les pieds, et enchaîne.",
     easier: "Squats classiques rapides, sans saut.",
     harder: "Pause 1 s en position basse avant chaque saut." },
 
   // CORE — gainage / abdos (poids du corps + kettlebell)
-  gainage: { name: 'Gainage', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 60, img: 'Plank',
+  gainage: { name: 'Gainage', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 60, img: 'abs/front-plank-with-twist.gif',
     desc: "Avant-bras et pointes de pieds. Corps parfaitement aligné, fessiers serrés, nombril rentré, respiration calme. Ne laisse pas les hanches s'affaisser ni se relever.",
     easier: "Sur les genoux.",
     harder: "Lève alternativement un pied quelques secondes sans bouger le bassin." },
-  kbtwist: { name: 'Russian twist kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 30, img: 'Russian_Twist',
+  kbtwist: { name: 'Russian twist kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 30, img: 'abs/russian-twist.gif',
     desc: "Assis, buste incliné à 45° en arrière, talons décollés (ou au sol si trop dur), kettlebell tenue à deux mains devant le sternum. Pivote le buste pour amener la cloche d'un côté puis de l'autre.",
     easier: "Talons au sol, ou sans kettlebell.",
     harder: "Talons décollés en permanence, rotation lente et contrôlée." },
-  deadbug: { name: 'Dead bug', cat: 'core', unit: 'reps', kb: false, perSide: true, baseFactor: 16, img: 'Dead_Bug',
+  deadbug: { name: 'Dead bug', cat: 'core', unit: 'reps', kb: false, perSide: true, baseFactor: 16, img: 'abs/dead-bug.gif',
     desc: "Sur le dos, bras tendus vers le plafond, jambes en « table » (genoux à 90°). Étends lentement bras gauche + jambe droite vers le sol sans toucher, reviens, alterne. Bas du dos collé au sol en permanence.",
     easier: "Bouge seulement les jambes, bras immobiles vers le plafond.",
     harder: "Tiens une kettlebell bras tendus au-dessus de la poitrine pendant le mouvement." },
-  climbers: { name: 'Mountain climbers', cat: 'core', unit: 'reps', kb: false, perSide: true, baseFactor: 30, img: 'Mountain_Climbers',
+  climbers: { name: 'Mountain climbers', cat: 'core', unit: 'reps', kb: false, perSide: true, baseFactor: 30, img: 'cardio/mountain-climber.gif',
     desc: "Planche haute. Ramène un genou vers la poitrine, repose, alterne avec l'autre, rythme rapide. Hanches stables, ne relève pas le fessier.",
     easier: "Ralentis le rythme, ou mains sur une chaise.",
     harder: "Accélère, ou amène le genou vers le coude opposé." },
-  hollow: { name: 'Hollow hold', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 30, img: 'Flat_Bench_Lying_Leg_Raise',
+  hollow: { name: 'Hollow hold', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 30, img: 'abs/band-lying-straight-leg-raise.gif',
     desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues, bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique.",
     easier: "Genoux pliés, ou bras le long du corps.",
     harder: "Bras et jambes plus proches du sol, sans décoller les lombaires." }
