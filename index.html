@@ -181,6 +181,25 @@ button { cursor: pointer; }
 .btn-c.plus.holding { background: var(--negative); border-color: var(--negative); color: #fff; }
 .btn-c.done { color: var(--text-2); font-size: 12px; }
 .ch-hint { font-size: 12px; color: var(--text-3); margin-top: 14px; line-height: 1.5; }
+.ch-hint b { color: var(--text-2); font-weight: 600; }
+
+/* === MINUTEUR DE RÉCUP (circuit guidé) === */
+.rest-timer {
+  position: fixed; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(18px);
+  z-index: 70; min-width: 250px; max-width: 88vw;
+  background: var(--surface-2); border: 1px solid var(--accent); border-radius: var(--radius);
+  box-shadow: 0 12px 44px rgba(0,0,0,0.65), 0 0 0 1px var(--accent-dim);
+  padding: 13px 16px; display: flex; align-items: center; gap: 14px;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.rest-timer.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.rest-num { font-family: 'Geist Mono', monospace; font-size: 30px; font-weight: 800; color: var(--accent); min-width: 54px; text-align: center; font-variant-numeric: tabular-nums; }
+.rest-mid { flex: 1; min-width: 0; }
+.rest-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.rest-cap { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.rest-skip { padding: 9px 13px; border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--text-2); font-size: 12px; font-weight: 600; background: transparent; flex-shrink: 0; }
+.rest-skip:active { background: var(--surface-3); transform: scale(0.95); }
 
 /* === BANNIÈRE FÉLICITATIONS === */
 .complete {
@@ -432,6 +451,15 @@ button { cursor: pointer; }
     <div class="toast-tag" id="toastTag">Bravo</div>
     <div class="toast-msg" id="toastMsg">Message</div>
   </div>
+</div>
+
+<div class="rest-timer" id="restTimer">
+  <div class="rest-num" id="restNum">0</div>
+  <div class="rest-mid">
+    <div class="rest-label" id="restLabel">Récup</div>
+    <div class="rest-cap">Reprends à 0 — souffle, replace-toi.</div>
+  </div>
+  <button class="rest-skip" onclick="cancelRest()">Passer</button>
 </div>
 
 <div class="levelup-bg" id="levelupOverlay">
@@ -742,14 +770,41 @@ function pickDailyChallenges(date) {
   return dailyChallengesAtLevel(dk, levelForDate(dk));
 }
 
-// Découpage conseillé en séries.
-function suggestSets(target, unit) {
-  const perMax = unit === 'sec' ? 40 : 12;
-  if (target <= perMax) return null;
-  const sets = Math.min(6, Math.ceil(target / perMax));
-  return { sets, per: Math.ceil(target / sets) };
+/* === DÉCOUPAGE EN SÉRIES (circuit guidé) ===
+   Calé sur la littérature force / conditioning :
+   - FORCE (pompes, presses, rowings, squats, fentes, charnières, dead bug) :
+     séries de ~8-12 reps menées proche de l'échec (1-2 reps en réserve),
+     repos ~90 s — l'intervalle qui préserve force et hypertrophie
+     (Schoenfeld et al. 2016 ; recommandations NSCA).
+   - BALISTIQUE / CONDITIONNEMENT (swings, squats sautés, russian twist,
+     mountain climbers) : séries plus longues ~20 reps, repos court ~60 s
+     pour garder la densité métabolique (utile pour la perte de gras).
+   - GAINAGE (planche, hollow) : tenues de ~30 s, repos ~45 s.
+   3 à 6 séries de travail ; sous une série pleine, on fait tout d'une traite. */
+const SET_STYLE = {
+  pompes: 'strength', rowing: 'strength', press: 'strength', renegade: 'strength',
+  goblet: 'strength', bulgarian: 'strength', fentes: 'strength', rdl: 'strength',
+  bridge: 'strength', deadbug: 'strength',
+  kbswing: 'ballistic', jumpsquats: 'ballistic', kbtwist: 'ballistic', climbers: 'ballistic',
+  gainage: 'hold', hollow: 'hold'
+};
+const SET_SCHEME = {
+  strength:  { per: 12, rest: 90 },
+  ballistic: { per: 20, rest: 60 },
+  hold:      { per: 30, rest: 45 }
+};
+function styleOf(c) {
+  const a = c.activity;
+  return SET_STYLE[c.id] || (a.unit === 'sec' ? 'hold' : a.kb ? 'ballistic' : 'strength');
 }
-function restSecondsFor(a) { if (a.kb) return 90; return a.cat === 'core' ? 45 : 60; }
+function suggestSets(c) {
+  const sc = SET_SCHEME[styleOf(c)];
+  if (c.target <= sc.per) return null;
+  const sets = Math.max(2, Math.min(6, Math.round(c.target / sc.per)));
+  let per = Math.ceil(c.target / sets);
+  if (c.activity.perSide && c.activity.unit === 'reps' && per % 2 !== 0) per += 1;
+  return { sets, per, rest: sc.rest, style: styleOf(c) };
+}
 
 // Précision sur le nombre de répétitions (par côté vs total).
 function repBreakdown(c) {
@@ -909,9 +964,11 @@ function renderToday(s) {
   }).join('');
 
   const area = document.getElementById('challengeArea');
+  syncWake(currentIdx >= 0);
 
   if (currentIdx < 0) {
     // Tous les défis faits → mot d'encouragement spécifique au niveau.
+    cancelRest(true);
     const m = completionMessage(s.levelInfo.level);
     area.innerHTML = `
       <div class="complete">
@@ -936,8 +993,16 @@ function renderToday(s) {
   const tag = a.cat === 'pecs' ? 'Pectoraux' : a.cat === 'haut' ? 'Haut du corps' : a.cat === 'bas' ? 'Bas du corps' : 'Core';
   const kbBadge = a.kb ? `<span class="ch-kb">${kbWeightOf(s.profile)} kg</span>` : '';
   const unit = a.unit === 'sec' ? 'secondes' : 'reps';
-  const tip = suggestSets(c.target, a.unit);
-  const hint = tip ? `Conseil : ${tip.sets} séries de ~${tip.per}${a.unit === 'sec' ? ' s' : ' reps'} · repos ${restSecondsFor(a)} s entre les séries.` : 'Tu peux tout faire d\'une traite ou en quelques séries.';
+  const tip = suggestSets(c);
+  let hint;
+  if (!tip) {
+    hint = 'Court : tu peux tout faire d\'une traite.';
+  } else if (a.unit === 'sec') {
+    hint = `Circuit : <b>${tip.sets} tenues</b> de ~${tip.per} s · récup ${tip.rest} s (stoppe puis relance le chrono entre chaque).`;
+  } else {
+    const setIdx = Math.min(tip.sets, Math.floor(cur / tip.per) + 1);
+    hint = `Circuit : <b>${tip.sets} séries</b> de ~${tip.per} reps · récup ${tip.rest} s. <b>Série ${setIdx}/${tip.sets}</b> en cours — un minuteur de récup se lance à chaque palier.`;
+  }
 
   let middleBtn;
   if (a.unit === 'sec') {
@@ -1086,6 +1151,14 @@ function addReps(id, delta, event) {
     spawnFloat(r.left + r.width / 2, r.top - 22, `+${delta * XP_PER_REP} XP`, '#ffd60a');
   }
   if (navigator.vibrate) navigator.vibrate(delta > 0 ? 8 : 6);
+  // Fin de série atteinte → lance le minuteur de récup (exercices au compteur).
+  if (delta > 0 && ACTIVITIES[id].unit === 'reps') {
+    const c = pickDailyChallenges(new Date()).find(x => x.id === id);
+    const tip = c && suggestSets(c);
+    if (tip && next < c.target && Math.floor(next / tip.per) > Math.floor(cur / tip.per)) {
+      startRest(tip.rest, Math.floor(next / tip.per), tip.sets);
+    }
+  }
   renderAll();
 }
 function validateChallenge(id, event) {
@@ -1100,6 +1173,7 @@ function validateChallenge(id, event) {
   STORE.set('reps_' + dk, reps);
   invalidateXp();
   pulseId = id;
+  cancelRest(true);
   if (holdId === id) stopHold(true);
   if (event) {
     const r = event.currentTarget.getBoundingClientRect();
@@ -1120,10 +1194,10 @@ function toggleHold(id) {
   holdInt = setInterval(() => {
     const c = pickDailyChallenges(new Date()).find(x => x.id === id);
     const reps = STORE.get('reps_' + todayKey(), {});
-    if (c && (reps[id] || 0) >= c.target) { stopHold(); return; }
+    if (c && (reps[id] || 0) >= c.target) { signalDone(); stopHold(); return; }
     addReps(id, 1, null);
     const reps2 = STORE.get('reps_' + todayKey(), {});
-    if (c && (reps2[id] || 0) >= c.target) stopHold();
+    if (c && (reps2[id] || 0) >= c.target) { signalDone(); stopHold(); }
   }, 1000);
   if (navigator.vibrate) navigator.vibrate(12);
   renderAll();
@@ -1133,6 +1207,75 @@ function stopHold(silent) {
   holdInt = null; holdId = null;
   if (!silent) renderAll();
 }
+
+/* === SON / ÉCRAN / RÉCUP ===
+   Bips WebAudio (aucun fichier), réveil écran pendant la séance, minuteur de récup. */
+let _audioCtx = null;
+function beep(freq, ms, type) {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!_audioCtx) _audioCtx = new AC();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    const t = _audioCtx.currentTime, dur = (ms || 160) / 1000;
+    const o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq || 880;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(_audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+function signalDone() { beep(990, 240); if (navigator.vibrate) navigator.vibrate([40, 60, 40]); }
+
+let restInt = null;
+function startRest(seconds, setDone, setsTotal) {
+  cancelRest(true);
+  const el = document.getElementById('restTimer');
+  const num = document.getElementById('restNum');
+  const lab = document.getElementById('restLabel');
+  if (!el) return;
+  let left = seconds;
+  num.textContent = left;
+  lab.textContent = `Série ${setDone}/${setsTotal} faite · récup`;
+  el.classList.add('show');
+  beep(660, 90); if (navigator.vibrate) navigator.vibrate(12);
+  restInt = setInterval(() => {
+    left--;
+    if (left <= 0) { cancelRest(); signalDone(); return; }
+    num.textContent = left;
+    if (left <= 3) beep(740, 70);
+  }, 1000);
+}
+function cancelRest() {
+  if (restInt) { clearInterval(restInt); restInt = null; }
+  const el = document.getElementById('restTimer');
+  if (el) el.classList.remove('show');
+}
+
+let wakeLock = null, wakeWanted = false, activeTab = 'today';
+async function acquireWake() {
+  wakeWanted = true;
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) {}
+}
+async function releaseWake() {
+  wakeWanted = false;
+  try { if (wakeLock) await wakeLock.release(); } catch (e) {}
+  wakeLock = null;
+}
+function syncWake(inProgress) {
+  if (activeTab === 'today' && inProgress) acquireWake();
+  else releaseWake();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && wakeWanted) acquireWake();
+});
 
 function openWeightModal() {
   const p = getProfile();
@@ -1261,6 +1404,8 @@ function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 }
 function switchTab(tab) {
+  activeTab = tab;
+  if (tab !== 'today') { cancelRest(); releaseWake(); }
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
   document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
   const view = document.getElementById('view-' + tab);
@@ -1307,7 +1452,19 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else init();
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            showToast('Mise à jour', 'Nouvelle version prête — rouvre l\'app.');
+          }
+        });
+      });
+    }).catch(() => {});
+  });
 }
 </script>
 

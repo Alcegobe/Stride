@@ -8,7 +8,10 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 
 - **4 défis par jour, affichés un par un** : le suivant n'apparaît que quand le précédent est validé.
 - **Pompes toujours en premier** (les pectoraux à la kettlebell, c'est galère), puis un exercice Haut, un Bas, un Core, tirés au sort par date avec anti-répétition de la veille.
-- Comptage **+1 à chaque rep** (plus gratifiant que +5/+10). Les exercices chronométrés (gainage, hollow) ont un bouton **Tenir** qui lance un chrono.
+- Comptage **+1 à chaque rep** (plus gratifiant que +5/+10). Les exercices chronométrés (gainage, hollow) ont un bouton **Tenir** qui lance un chrono, avec **bip + vibration** en fin de tenue.
+- **Circuit guidé en séries** : chaque défi est découpé en séries calées sur la littérature force / conditioning — exercices de **force** (pompes, presses, squats, fentes, charnières) en séries de ~8-12 reps proches de l'échec, repos ~90 s ; mouvements **balistiques** (swings, squats sautés, russian twist, mountain climbers) en séries ~20 reps, repos court ~60 s ; **gainage** en tenues de ~30 s, repos ~45 s. Sous une série pleine, on fait tout d'une traite.
+- **Minuteur de récup automatique** : un compte à rebours se lance à la fin de chaque série (bip + vibration à la reprise), avec bouton **Passer**.
+- **L'écran reste allumé** pendant la séance (Screen Wake Lock), relâché une fois les défis bouclés ou en quittant l'onglet.
 - **Nombre de répétitions précis** : pour les mouvements unilatéraux/alternés, la cible est un *total* et l'app indique « X au total · Y de chaque côté ».
 - Chaque exercice a une **fiche** (image, description, version plus facile / plus dure, lien démo vidéo). Images servies via [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (CDN jsDelivr), avec repli sur le texte si hors-ligne.
 - Une fois les 4 défis bouclés : **un mot d'encouragement spécifique au niveau** + confettis.
@@ -32,7 +35,8 @@ On gagne **1 XP par rep** (ou seconde d'effort) + un bonus à chaque pesée, et 
 - Un seul fichier `index.html` self-contained
 - Vanilla JS, pas de framework
 - Persistance en `localStorage` (clés `pa_*`)
-- PWA installable + offline (service worker `sw.js`)
+- PWA installable + offline (service worker `sw.js`), avec notification de nouvelle version
+- Wake Lock + WebAudio (bips) sans dépendance ni fichier audio
 - Hébergé sur GitHub Pages
 
 ## Dev local
