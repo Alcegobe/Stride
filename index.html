@@ -411,14 +411,14 @@ button { cursor: pointer; }
           </div>
         </div>
         <div class="level-bar"><div class="level-bar-fill" id="profLvlBar" style="width:0%"></div></div>
-        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">35 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes reps ; chaque journée de défis manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
+        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">70 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes reps ; chaque journée de défis manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
       </div>
     </div>
 
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Capacités estimées</div></div>
       <div class="capacities">
-        <div class="capacities-sub">Tes max estimés avec ta kettlebell et ton poids du corps. Les défis du jour partent de 35 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
+        <div class="capacities-sub">Tes max estimés avec ta kettlebell et ton poids du corps. Les défis du jour partent de 70 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
         <div class="cap-grid" id="capGrid"></div>
       </div>
     </div>
@@ -671,8 +671,8 @@ function levelFromXp(xp) {
   const span = Math.max(1, nextXp - floorXp);
   return { level, total: xp, into, span, nextXp, toNext: nextXp - xp, pct: Math.min(100, into / span * 100) };
 }
-// Difficulté : 35 % des capacités au niveau 0, +5 % par niveau, plafond 160 %.
-function levelDifficulty(level) { return Math.min(1.6, 0.35 + level * 0.05); }
+// Difficulté : 70 % des capacités au niveau 0, +5 % par niveau, plafond 160 %.
+function levelDifficulty(level) { return Math.min(1.6, 0.70 + level * 0.05); }
 
 let _xpCache = null;
 function invalidateXp() { _xpCache = null; }

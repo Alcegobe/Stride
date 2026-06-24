@@ -19,7 +19,7 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 
 ## Niveau / XP
 
-On gagne **1 XP par rep** (ou seconde d'effort) + un bonus à chaque pesée, et on **perd un peu d'XP** pour chaque journée passée (depuis la création du compte) où les défis ne sont pas remplis (~30 XP pour un jour entièrement manqué, proportionnel sinon, et toujours plus lent que le gain). Le **niveau** pilote la difficulté : 35 % des capacités au niveau 0, +5 % par niveau (plafond 160 %). Redescendre de niveau **allège** les défis. L'XP est recalculée jour après jour dans l'ordre chronologique (pas de récursion, pas de rétroactivité).
+On gagne **1 XP par rep** (ou seconde d'effort) + un bonus à chaque pesée, et on **perd un peu d'XP** pour chaque journée passée (depuis la création du compte) où les défis ne sont pas remplis (~30 XP pour un jour entièrement manqué, proportionnel sinon, et toujours plus lent que le gain). Le **niveau** pilote la difficulté : 70 % des capacités au niveau 0, +5 % par niveau (plafond 160 %). Redescendre de niveau **allège** les défis. L'XP est recalculée jour après jour dans l'ordre chronologique (pas de récursion, pas de rétroactivité).
 
 ## Onglets
 
