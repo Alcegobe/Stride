@@ -181,6 +181,25 @@ button { cursor: pointer; }
 .btn-c.plus.holding { background: var(--negative); border-color: var(--negative); color: #fff; }
 .btn-c.done { color: var(--text-2); font-size: 12px; }
 .ch-hint { font-size: 12px; color: var(--text-3); margin-top: 14px; line-height: 1.5; }
+.ch-hint b { color: var(--text-2); font-weight: 600; }
+
+/* === MINUTEUR DE RÉCUP (circuit guidé) === */
+.rest-timer {
+  position: fixed; left: 50%; bottom: calc(82px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(18px);
+  z-index: 70; min-width: 250px; max-width: 88vw;
+  background: var(--surface-2); border: 1px solid var(--accent); border-radius: var(--radius);
+  box-shadow: 0 12px 44px rgba(0,0,0,0.65), 0 0 0 1px var(--accent-dim);
+  padding: 13px 16px; display: flex; align-items: center; gap: 14px;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.rest-timer.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.rest-num { font-family: 'Geist Mono', monospace; font-size: 30px; font-weight: 800; color: var(--accent); min-width: 54px; text-align: center; font-variant-numeric: tabular-nums; }
+.rest-mid { flex: 1; min-width: 0; }
+.rest-label { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.rest-cap { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.rest-skip { padding: 9px 13px; border: 1px solid var(--border-2); border-radius: var(--radius); color: var(--text-2); font-size: 12px; font-weight: 600; background: transparent; flex-shrink: 0; }
+.rest-skip:active { background: var(--surface-3); transform: scale(0.95); }
 
 /* === BANNIÈRE FÉLICITATIONS === */
 .complete {
@@ -307,6 +326,24 @@ button { cursor: pointer; }
 .modal-actions .btn-inline { flex: 1; padding: 14px; }
 .onb-input { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--text); padding: 14px 0; font-family: 'Geist', sans-serif; font-size: 44px; font-weight: 400; color: var(--text); font-feature-settings: 'tnum'; letter-spacing: -0.02em; }
 .onb-input:focus { border-bottom-color: var(--accent); }
+
+/* === TEST D'ÉVALUATION === */
+.calib-intro { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.calib-intro b { color: var(--text); font-weight: 600; }
+.calib-img { width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius); background: var(--surface-2); margin: 4px 0 14px; }
+.calib-desc { font-size: 13px; line-height: 1.5; color: var(--text-3); margin-bottom: 16px; }
+.calib-q { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 2px; }
+.calib-side { font-size: 13px; color: var(--accent); font-weight: 500; }
+.calib-results { margin-top: 14px; border-top: 1px solid var(--border); }
+.calib-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-2); }
+.calib-row b { color: var(--accent); font-weight: 600; }
+.calib-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; cursor: pointer; }
+.calib-banner:active { transform: scale(0.99); }
+.calib-banner-tag { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
+.calib-banner-msg { font-size: 13.5px; color: var(--text); line-height: 1.4; }
+.calib-banner-go { color: var(--accent); font-weight: 700; font-size: 13px; white-space: nowrap; }
+.calib-test-btn { width: 100%; margin-top: 14px; padding: 14px; border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius); font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; background: transparent; }
+.calib-test-btn:active { background: var(--accent-dim); }
 </style>
 </head>
 <body>
@@ -335,6 +372,8 @@ button { cursor: pointer; }
         <span id="levelHeroNext">Niv. 1 dans 100 XP</span>
       </div>
     </div>
+
+    <div id="calibBanner"></div>
 
     <div class="sec-head">
       <div class="sec-title">Défis du jour</div>
@@ -392,15 +431,16 @@ button { cursor: pointer; }
           </div>
         </div>
         <div class="level-bar"><div class="level-bar-fill" id="profLvlBar" style="width:0%"></div></div>
-        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">35 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes reps ; chaque journée de défis manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
+        <div class="prof-level-sub">Difficulté actuelle des défis : <b id="profLvlDiff">70 %</b> de tes capacités. Tu gagnes de l'XP en faisant tes reps ; chaque journée de défis manquée en retire un peu (plus lentement que tu n'en gagnes). Monter de niveau durcit les défis, redescendre les allège.</div>
       </div>
     </div>
 
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Capacités estimées</div></div>
       <div class="capacities">
-        <div class="capacities-sub">Tes max estimés avec ta kettlebell et ton poids du corps. Les défis du jour partent de 35 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
+        <div class="capacities-sub">Tes max — estimés au départ, ou mesurés via le test d'évaluation. Les défis du jour partent de 70 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
         <div class="cap-grid" id="capGrid"></div>
+        <button class="calib-test-btn" id="calibBtn" onclick="openCalib()">Faire le test d'évaluation</button>
       </div>
     </div>
 
@@ -434,6 +474,15 @@ button { cursor: pointer; }
   </div>
 </div>
 
+<div class="rest-timer" id="restTimer">
+  <div class="rest-num" id="restNum">0</div>
+  <div class="rest-mid">
+    <div class="rest-label" id="restLabel">Récup</div>
+    <div class="rest-cap">Reprends à 0 — souffle, replace-toi.</div>
+  </div>
+  <button class="rest-skip" onclick="cancelRest()">Passer</button>
+</div>
+
 <div class="levelup-bg" id="levelupOverlay">
   <div class="levelup-card">
     <div class="levelup-rays"></div>
@@ -454,6 +503,10 @@ button { cursor: pointer; }
       <button class="btn-inline" onclick="logWeight()">Enregistrer</button>
     </div>
   </div>
+</div>
+
+<div class="modal-bg" id="modalCalib">
+  <div class="modal" id="calibModal"><!-- injecté par renderCalib() --></div>
 </div>
 
 <div class="modal-bg" id="modalInfo">
@@ -593,8 +646,8 @@ function setProfile(p) { invalidateXp(); STORE.set('profile', p); }
 function kbWeightOf(p) { const w = p && p.kbWeight; return (typeof w === 'number' && w > 0) ? w : 16; }
 
 /* === CAPACITÉS ===
-   Max estimés à partir du profil + charge de la kettlebell. */
-function computeCapacities(p) {
+   Max bruts estimés à partir du profil + charge de la kettlebell. */
+function rawCapacities(p) {
   const heightM = p.height / 100;
   const bmi = p.weight / (heightM * heightM);
   const ageF = p.age <= 25 ? 1.0 : Math.max(0.55, 1.0 - (p.age - 25) * 0.011);
@@ -603,8 +656,7 @@ function computeCapacities(p) {
   const fBmiLegs = bmi > 32 ? 0.85 : bmi < 18.5 ? 0.92 : 1.0;
   const fLvl = p.level === 'sed' ? 0.45 : p.level === 'occ' ? 0.75 : 1.0;
   const fGoal = p.goal === 'fat' ? 1.10 : p.goal === 'muscle' ? 0.95 : 1.0;
-  const kbWeight = kbWeightOf(p);
-  const fLoad = Math.max(0.5, Math.min(1.8, 16 / kbWeight));
+  const fLoad = Math.max(0.5, Math.min(1.8, 16 / kbWeightOf(p)));
 
   const result = {};
   for (const k in ACTIVITIES) {
@@ -614,10 +666,37 @@ function computeCapacities(p) {
     else if (a.cat === 'bas') f *= fLegs * fBmiLegs;
     else f *= fCore;
     if (a.kb) f *= fLoad;
-    const value = a.baseFactor * f;
-    result[k] = Math.max(a.unit === 'sec' ? 15 : 5, Math.round(value));
+    result[k] = a.baseFactor * f; // brut, non arrondi
   }
   return result;
+}
+// Max retenus = bruts × calibrage mesuré par catégorie (test d'évaluation), sinon ×1.
+function computeCapacities(p) {
+  const raw = rawCapacities(p);
+  const cal = (p && p.calib) || {};
+  const result = {};
+  for (const k in raw) {
+    const a = ACTIVITIES[k];
+    const m = cal[a.cat] || 1;
+    result[k] = Math.max(a.unit === 'sec' ? 15 : 5, Math.round(raw[k] * m));
+  }
+  return result;
+}
+// Le test d'évaluation : exercices testés (un par catégorie de défi).
+const CALIB_TESTS = ['pompes', 'rowing', 'goblet', 'gainage'];
+function applyCalibration(maxes) {
+  const p = getProfile();
+  const raw = rawCapacities(p);
+  const cal = Object.assign({}, p.calib || {});
+  CALIB_TESTS.forEach(id => {
+    const v = maxes[id];
+    if (typeof v === 'number' && v > 0 && raw[id] > 0) {
+      const cat = ACTIVITIES[id].cat;
+      cal[cat] = Math.max(0.3, Math.min(3, v / raw[id]));
+    }
+  });
+  p.calib = cal;
+  setProfile(p);
 }
 
 /* === XP / NIVEAU ===
@@ -643,8 +722,8 @@ function levelFromXp(xp) {
   const span = Math.max(1, nextXp - floorXp);
   return { level, total: xp, into, span, nextXp, toNext: nextXp - xp, pct: Math.min(100, into / span * 100) };
 }
-// Difficulté : 35 % des capacités au niveau 0, +5 % par niveau, plafond 160 %.
-function levelDifficulty(level) { return Math.min(1.6, 0.35 + level * 0.05); }
+// Difficulté : 70 % des capacités au niveau 0, +5 % par niveau, plafond 160 %.
+function levelDifficulty(level) { return Math.min(1.6, 0.70 + level * 0.05); }
 
 let _xpCache = null;
 function invalidateXp() { _xpCache = null; }
@@ -742,14 +821,41 @@ function pickDailyChallenges(date) {
   return dailyChallengesAtLevel(dk, levelForDate(dk));
 }
 
-// Découpage conseillé en séries.
-function suggestSets(target, unit) {
-  const perMax = unit === 'sec' ? 40 : 12;
-  if (target <= perMax) return null;
-  const sets = Math.min(6, Math.ceil(target / perMax));
-  return { sets, per: Math.ceil(target / sets) };
+/* === DÉCOUPAGE EN SÉRIES (circuit guidé) ===
+   Calé sur la littérature force / conditioning :
+   - FORCE (pompes, presses, rowings, squats, fentes, charnières, dead bug) :
+     séries de ~8-12 reps menées proche de l'échec (1-2 reps en réserve),
+     repos ~90 s — l'intervalle qui préserve force et hypertrophie
+     (Schoenfeld et al. 2016 ; recommandations NSCA).
+   - BALISTIQUE / CONDITIONNEMENT (swings, squats sautés, russian twist,
+     mountain climbers) : séries plus longues ~20 reps, repos court ~60 s
+     pour garder la densité métabolique (utile pour la perte de gras).
+   - GAINAGE (planche, hollow) : tenues de ~30 s, repos ~45 s.
+   3 à 6 séries de travail ; sous une série pleine, on fait tout d'une traite. */
+const SET_STYLE = {
+  pompes: 'strength', rowing: 'strength', press: 'strength', renegade: 'strength',
+  goblet: 'strength', bulgarian: 'strength', fentes: 'strength', rdl: 'strength',
+  bridge: 'strength', deadbug: 'strength',
+  kbswing: 'ballistic', jumpsquats: 'ballistic', kbtwist: 'ballistic', climbers: 'ballistic',
+  gainage: 'hold', hollow: 'hold'
+};
+const SET_SCHEME = {
+  strength:  { per: 12, rest: 90 },
+  ballistic: { per: 20, rest: 60 },
+  hold:      { per: 30, rest: 45 }
+};
+function styleOf(c) {
+  const a = c.activity;
+  return SET_STYLE[c.id] || (a.unit === 'sec' ? 'hold' : a.kb ? 'ballistic' : 'strength');
 }
-function restSecondsFor(a) { if (a.kb) return 90; return a.cat === 'core' ? 45 : 60; }
+function suggestSets(c) {
+  const sc = SET_SCHEME[styleOf(c)];
+  if (c.target <= sc.per) return null;
+  const sets = Math.max(2, Math.min(6, Math.round(c.target / sc.per)));
+  let per = Math.ceil(c.target / sets);
+  if (c.activity.perSide && c.activity.unit === 'reps' && per % 2 !== 0) per += 1;
+  return { sets, per, rest: sc.rest, style: styleOf(c) };
+}
 
 // Précision sur le nombre de répétitions (par côté vs total).
 function repBreakdown(c) {
@@ -891,6 +997,19 @@ function renderToday(s) {
   document.getElementById('todayTitle').textContent = dayNames[today.getDay()];
   document.getElementById('todayDate').textContent = `${today.getDate()} ${monthNames[today.getMonth()]}`;
 
+  const banner = document.getElementById('calibBanner');
+  if (banner) {
+    banner.innerHTML = (s.profile && !s.profile.calib)
+      ? `<div class="calib-banner" onclick="openCalib()">
+           <div>
+             <div class="calib-banner-tag">À faire</div>
+             <div class="calib-banner-msg">Évalue ton niveau de départ — un test de ${CALIB_TESTS.length} exos jusqu'à l'échec (~5 min).</div>
+           </div>
+           <span class="calib-banner-go">Tester →</span>
+         </div>`
+      : '';
+  }
+
   const dk = todayKey();
   const reps = STORE.get('reps_' + dk, {});
   const challenges = pickDailyChallenges(today);
@@ -909,9 +1028,11 @@ function renderToday(s) {
   }).join('');
 
   const area = document.getElementById('challengeArea');
+  syncWake(currentIdx >= 0);
 
   if (currentIdx < 0) {
     // Tous les défis faits → mot d'encouragement spécifique au niveau.
+    cancelRest(true);
     const m = completionMessage(s.levelInfo.level);
     area.innerHTML = `
       <div class="complete">
@@ -936,8 +1057,16 @@ function renderToday(s) {
   const tag = a.cat === 'pecs' ? 'Pectoraux' : a.cat === 'haut' ? 'Haut du corps' : a.cat === 'bas' ? 'Bas du corps' : 'Core';
   const kbBadge = a.kb ? `<span class="ch-kb">${kbWeightOf(s.profile)} kg</span>` : '';
   const unit = a.unit === 'sec' ? 'secondes' : 'reps';
-  const tip = suggestSets(c.target, a.unit);
-  const hint = tip ? `Conseil : ${tip.sets} séries de ~${tip.per}${a.unit === 'sec' ? ' s' : ' reps'} · repos ${restSecondsFor(a)} s entre les séries.` : 'Tu peux tout faire d\'une traite ou en quelques séries.';
+  const tip = suggestSets(c);
+  let hint;
+  if (!tip) {
+    hint = 'Court : tu peux tout faire d\'une traite.';
+  } else if (a.unit === 'sec') {
+    hint = `Circuit : <b>${tip.sets} tenues</b> de ~${tip.per} s · récup ${tip.rest} s (stoppe puis relance le chrono entre chaque).`;
+  } else {
+    const setIdx = Math.min(tip.sets, Math.floor(cur / tip.per) + 1);
+    hint = `Circuit : <b>${tip.sets} séries</b> de ~${tip.per} reps · récup ${tip.rest} s. <b>Série ${setIdx}/${tip.sets}</b> en cours — un minuteur de récup se lance à chaque palier.`;
+  }
 
   let middleBtn;
   if (a.unit === 'sec') {
@@ -1066,6 +1195,8 @@ function renderProfile(s) {
     const a = ACTIVITIES[id];
     return `<div class="cap-cell"><div class="cap-num">${caps[id]}${a.unit === 'sec' ? ' s' : ''}${a.kb ? '<span class="cap-kb">KB</span>' : ''}</div><div class="cap-name">${a.name}</div></div>`;
   }).join('');
+  const calibBtn = document.getElementById('calibBtn');
+  if (calibBtn) calibBtn.textContent = p.calib ? 'Refaire le test d\'évaluation' : 'Faire le test d\'évaluation';
 }
 
 /* === ACTIONS === */
@@ -1086,6 +1217,14 @@ function addReps(id, delta, event) {
     spawnFloat(r.left + r.width / 2, r.top - 22, `+${delta * XP_PER_REP} XP`, '#ffd60a');
   }
   if (navigator.vibrate) navigator.vibrate(delta > 0 ? 8 : 6);
+  // Fin de série atteinte → lance le minuteur de récup (exercices au compteur).
+  if (delta > 0 && ACTIVITIES[id].unit === 'reps') {
+    const c = pickDailyChallenges(new Date()).find(x => x.id === id);
+    const tip = c && suggestSets(c);
+    if (tip && next < c.target && Math.floor(next / tip.per) > Math.floor(cur / tip.per)) {
+      startRest(tip.rest, Math.floor(next / tip.per), tip.sets);
+    }
+  }
   renderAll();
 }
 function validateChallenge(id, event) {
@@ -1100,6 +1239,7 @@ function validateChallenge(id, event) {
   STORE.set('reps_' + dk, reps);
   invalidateXp();
   pulseId = id;
+  cancelRest(true);
   if (holdId === id) stopHold(true);
   if (event) {
     const r = event.currentTarget.getBoundingClientRect();
@@ -1111,6 +1251,81 @@ function validateChallenge(id, event) {
   renderAll();
 }
 
+/* === TEST D'ÉVALUATION ===
+   Quelques exercices menés à l'échec → calibre les capacités sur tes vrais max. */
+let calibStep = 0, calibMaxes = {};
+function openCalib() { calibStep = 0; calibMaxes = {}; renderCalib(); openModal('modalCalib'); }
+function calibBack() { if (calibStep > 0) { calibStep--; renderCalib(); } }
+function calibNext() {
+  const N = CALIB_TESTS.length;
+  if (calibStep >= 1 && calibStep <= N) {
+    const id = CALIB_TESTS[calibStep - 1];
+    const a = ACTIVITIES[id];
+    const el = document.getElementById('calibInput');
+    const v = parseFloat(el && el.value);
+    const max = a.unit === 'sec' ? 600 : 300;
+    if (!v || v < 1 || v > max) { if (el) el.focus(); return; }
+    calibMaxes[id] = Math.round(v);
+  }
+  calibStep++;
+  if (calibStep === N + 1) { applyCalibration(calibMaxes); renderAll(); }
+  renderCalib();
+}
+function renderCalib() {
+  const box = document.getElementById('calibModal');
+  if (!box) return;
+  const N = CALIB_TESTS.length;
+  if (calibStep === 0) {
+    box.innerHTML = `
+      <div class="modal-tag">Test d'évaluation</div>
+      <div class="modal-title">Mesurons ton <em>niveau de départ</em></div>
+      <div class="calib-intro">${N} exercices, un par famille. Pour chacun : <b>fais le maximum de répétitions en une seule série</b>, à fond mais avec une forme propre — arrête dès que la technique casse. L'app calibre ensuite tes défis sur tes vrais chiffres.</div>
+      <div class="calib-intro" style="margin-top:10px;color:var(--text-3)">Échauffe-toi avant. Tu peux refaire ce test quand tu veux depuis l'onglet Profil.</div>
+      <div class="modal-actions" style="margin-top:24px">
+        <button class="btn-inline ghost" onclick="closeModal('modalCalib')">Plus tard</button>
+        <button class="btn-inline" onclick="calibNext()">Commencer</button>
+      </div>`;
+    return;
+  }
+  if (calibStep <= N) {
+    const id = CALIB_TESTS[calibStep - 1];
+    const a = ACTIVITIES[id];
+    const isSec = a.unit === 'sec';
+    const prev = calibMaxes[id];
+    const kb = a.kb ? ` · kettlebell ${kbWeightOf(getProfile())} kg` : '';
+    box.innerHTML = `
+      <div class="modal-tag">Test ${calibStep} / ${N}${kb}</div>
+      <div class="modal-title">${a.name}${a.perSide ? ' <span class="calib-side">(total 2 côtés)</span>' : ''}</div>
+      <img class="calib-img" src="${exImg(a)}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">
+      <div class="calib-desc">${a.desc}</div>
+      <div class="calib-q">${isSec ? 'Combien de secondes max tiens-tu ?' : 'Combien de reps max d\'affilée ?'}${a.perSide ? ' — les deux côtés cumulés' : ''}</div>
+      <input type="number" class="onb-input" id="calibInput" inputmode="numeric" placeholder="—" value="${prev != null ? prev : ''}" min="1" max="${isSec ? 600 : 300}" style="margin-bottom:8px">
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn-inline ghost" onclick="calibBack()">Retour</button>
+        <button class="btn-inline" onclick="calibNext()">${calibStep === N ? 'Calculer' : 'Suivant'}</button>
+      </div>`;
+    setTimeout(() => { const el = document.getElementById('calibInput'); if (el) el.focus(); }, 220);
+    return;
+  }
+  const caps = computeCapacities(getProfile());
+  const lvl = levelFromXp(getXpTimeline().total).level;
+  const f = levelDifficulty(lvl);
+  const rows = CALIB_TESTS.map(id => {
+    const a = ACTIVITIES[id], u = a.unit === 'sec' ? ' s' : '';
+    let t = Math.max(a.unit === 'sec' ? 10 : 3, Math.round(caps[id] * f));
+    if (a.perSide && a.unit === 'reps' && t % 2) t += 1;
+    return `<div class="calib-row"><span>${a.name}</span><span><b>${caps[id]}${u}</b> max · défi ${t}${u}</span></div>`;
+  }).join('');
+  box.innerHTML = `
+    <div class="modal-tag">Calibré ✓</div>
+    <div class="modal-title">Ton <em>niveau de départ</em> est réglé</div>
+    <div class="calib-intro">Tes défis partent maintenant de <b>${Math.round(f * 100)} %</b> de tes vrais max (niveau ${lvl}). Les autres exercices sont ajustés par famille.</div>
+    <div class="calib-results">${rows}</div>
+    <div class="modal-actions" style="margin-top:22px">
+      <button class="btn-inline full" onclick="closeModal('modalCalib'); switchTab('today');">C'est parti</button>
+    </div>`;
+}
+
 /* Chrono pour les exercices en secondes (gainage, hollow). */
 let holdId = null, holdInt = null;
 function toggleHold(id) {
@@ -1120,10 +1335,10 @@ function toggleHold(id) {
   holdInt = setInterval(() => {
     const c = pickDailyChallenges(new Date()).find(x => x.id === id);
     const reps = STORE.get('reps_' + todayKey(), {});
-    if (c && (reps[id] || 0) >= c.target) { stopHold(); return; }
+    if (c && (reps[id] || 0) >= c.target) { signalDone(); stopHold(); return; }
     addReps(id, 1, null);
     const reps2 = STORE.get('reps_' + todayKey(), {});
-    if (c && (reps2[id] || 0) >= c.target) stopHold();
+    if (c && (reps2[id] || 0) >= c.target) { signalDone(); stopHold(); }
   }, 1000);
   if (navigator.vibrate) navigator.vibrate(12);
   renderAll();
@@ -1133,6 +1348,75 @@ function stopHold(silent) {
   holdInt = null; holdId = null;
   if (!silent) renderAll();
 }
+
+/* === SON / ÉCRAN / RÉCUP ===
+   Bips WebAudio (aucun fichier), réveil écran pendant la séance, minuteur de récup. */
+let _audioCtx = null;
+function beep(freq, ms, type) {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!_audioCtx) _audioCtx = new AC();
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
+    const t = _audioCtx.currentTime, dur = (ms || 160) / 1000;
+    const o = _audioCtx.createOscillator(), g = _audioCtx.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq || 880;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(_audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  } catch (e) {}
+}
+function signalDone() { beep(990, 240); if (navigator.vibrate) navigator.vibrate([40, 60, 40]); }
+
+let restInt = null;
+function startRest(seconds, setDone, setsTotal) {
+  cancelRest(true);
+  const el = document.getElementById('restTimer');
+  const num = document.getElementById('restNum');
+  const lab = document.getElementById('restLabel');
+  if (!el) return;
+  let left = seconds;
+  num.textContent = left;
+  lab.textContent = `Série ${setDone}/${setsTotal} faite · récup`;
+  el.classList.add('show');
+  beep(660, 90); if (navigator.vibrate) navigator.vibrate(12);
+  restInt = setInterval(() => {
+    left--;
+    if (left <= 0) { cancelRest(); signalDone(); return; }
+    num.textContent = left;
+    if (left <= 3) beep(740, 70);
+  }, 1000);
+}
+function cancelRest() {
+  if (restInt) { clearInterval(restInt); restInt = null; }
+  const el = document.getElementById('restTimer');
+  if (el) el.classList.remove('show');
+}
+
+let wakeLock = null, wakeWanted = false, activeTab = 'today';
+async function acquireWake() {
+  wakeWanted = true;
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) {}
+}
+async function releaseWake() {
+  wakeWanted = false;
+  try { if (wakeLock) await wakeLock.release(); } catch (e) {}
+  wakeLock = null;
+}
+function syncWake(inProgress) {
+  if (activeTab === 'today' && inProgress) acquireWake();
+  else releaseWake();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && wakeWanted) acquireWake();
+});
 
 function openWeightModal() {
   const p = getProfile();
@@ -1261,6 +1545,8 @@ function setupTabs() {
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 }
 function switchTab(tab) {
+  activeTab = tab;
+  if (tab !== 'today') { cancelRest(); releaseWake(); }
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x.dataset.tab === tab));
   document.querySelectorAll('.view').forEach(v => v.classList.remove('show'));
   const view = document.getElementById('view-' + tab);
@@ -1307,7 +1593,19 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else init();
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(() => {}); });
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            showToast('Mise à jour', 'Nouvelle version prête — rouvre l\'app.');
+          }
+        });
+      });
+    }).catch(() => {});
+  });
 }
 </script>
 
