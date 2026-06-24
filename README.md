@@ -6,6 +6,7 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 
 ## Défis du jour
 
+- **Aucun défi tant que l'évaluation n'est pas faite** : Stride cale chaque défi sur des capacités *mesurées*, jamais sur une estimation de profil. Tant que le test d'évaluation n'est pas passé, l'app affiche un appel à l'évaluation au lieu de défis (et l'XP/le niveau ne démarrent qu'à ce moment-là).
 - **4 défis par jour, affichés un par un** : le suivant n'apparaît que quand le précédent est validé.
 - **Pompes toujours en premier** (les pectoraux à la kettlebell, c'est galère), puis un exercice Haut, un Bas, un Core, tirés au sort par date avec anti-répétition de la veille.
 - Comptage **+1 à chaque rep** (plus gratifiant que +5/+10). Les exercices chronométrés (gainage, hollow) ont un bouton **Tenir** qui lance un chrono, avec **bip + vibration** en fin de tenue.
@@ -19,7 +20,7 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 
 ## Test d'évaluation (calibrage)
 
-Au premier lancement, une bannière propose un **test d'évaluation** : 4 exercices (un par famille — pompes, rowing KB, goblet squat, gainage) menés **jusqu'à l'échec**. À partir de tes max réels, l'app calcule un coefficient par famille et **calibre toutes tes capacités** sur tes vrais chiffres plutôt que sur l'estimation issue du profil. C'est ce qui fixe ton niveau 0. Refaisable à tout moment depuis l'onglet Profil. Tant que le test n'est pas fait, les capacités restent estimées depuis le profil.
+Le test d'évaluation est **obligatoire avant tout défi** : 4 exercices (un par famille — pompes, rowing KB, goblet squat, gainage) menés **jusqu'à l'échec**. À partir de tes max réels, l'app calcule un coefficient par famille et **calibre toutes tes capacités** sur tes vrais chiffres. C'est ce qui fixe ton niveau 0 et démarre la progression (XP, décroissance). Tant que le test n'est pas passé, l'onglet Défis affiche un appel à l'évaluation et les capacités ne sont pas affichées. Refaisable à tout moment depuis l'onglet Profil.
 
 ## Niveau / XP
 

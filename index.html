@@ -344,6 +344,13 @@ button { cursor: pointer; }
 .calib-banner-go { color: var(--accent); font-weight: 700; font-size: 13px; white-space: nowrap; }
 .calib-test-btn { width: 100%; margin-top: 14px; padding: 14px; border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius); font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; background: transparent; }
 .calib-test-btn:active { background: var(--accent-dim); }
+.gate { background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radius); padding: 26px 22px; text-align: center; animation: fade 0.25s ease-out; }
+.gate-tag { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 12px; }
+.gate-head { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.25; }
+.gate-sub { font-size: 14px; color: var(--text-2); line-height: 1.55; margin-bottom: 20px; }
+.gate-sub b { color: var(--text); font-weight: 600; }
+.gate .btn-inline { width: 100%; padding: 15px; }
+.cap-empty { font-size: 13.5px; color: var(--text-2); line-height: 1.55; padding: 6px 2px; }
 </style>
 </head>
 <body>
@@ -687,6 +694,7 @@ function computeCapacities(p) {
 const CALIB_TESTS = ['pompes', 'rowing', 'goblet', 'gainage'];
 function applyCalibration(maxes) {
   const p = getProfile();
+  const firstTime = !p.calib;
   const raw = rawCapacities(p);
   const cal = Object.assign({}, p.calib || {});
   CALIB_TESTS.forEach(id => {
@@ -697,6 +705,9 @@ function applyCalibration(maxes) {
     }
   });
   p.calib = cal;
+  // Première évaluation = vrai point de départ : la progression et la
+  // décroissance d'XP ne courent qu'à partir d'aujourd'hui.
+  if (firstTime) { p.startDate = todayKey(); p.decayStart = todayKey(); }
   setProfile(p);
 }
 
@@ -732,6 +743,8 @@ function getXpTimeline() {
   if (_xpCache) return _xpCache;
   const profile = getProfile();
   if (!profile) { _xpCache = { xpBefore: {}, total: 0 }; return _xpCache; }
+  // Avant l'évaluation, il n'y a pas de défis → ni XP, ni décroissance.
+  if (!profile.calib) { _xpCache = { xpBefore: {}, total: 0 }; return _xpCache; }
 
   const repsObjByDate = {};
   STORE.all().forEach(k => {
@@ -984,11 +997,12 @@ function renderAll() {
 
 function renderLevel(s) {
   const li = s.levelInfo;
-  document.getElementById('levelHeroNum').textContent = li.level;
+  const calibrated = !!(s.profile && s.profile.calib);
+  document.getElementById('levelHeroNum').textContent = calibrated ? li.level : '—';
   document.getElementById('levelHeroKb').textContent = `Kettlebell ${kbWeightOf(s.profile)} kg`;
-  document.getElementById('levelBarFill').style.width = li.pct.toFixed(1) + '%';
-  document.getElementById('levelHeroXp').textContent = `${li.into} / ${li.span} XP`;
-  document.getElementById('levelHeroNext').textContent = `Niv. ${li.level + 1} dans ${li.toNext} XP`;
+  document.getElementById('levelBarFill').style.width = (calibrated ? li.pct : 0).toFixed(1) + '%';
+  document.getElementById('levelHeroXp').textContent = calibrated ? `${li.into} / ${li.span} XP` : 'Non évalué';
+  document.getElementById('levelHeroNext').textContent = calibrated ? `Niv. ${li.level + 1} dans ${li.toNext} XP` : 'Fais ton évaluation';
 }
 
 function renderToday(s) {
@@ -998,17 +1012,25 @@ function renderToday(s) {
   document.getElementById('todayTitle').textContent = dayNames[today.getDay()];
   document.getElementById('todayDate').textContent = `${today.getDate()} ${monthNames[today.getMonth()]}`;
 
+  // Pas de défi tant que l'évaluation n'est pas faite : Stride cale les défis
+  // sur des capacités MESURÉES, jamais sur une estimation de profil.
   const banner = document.getElementById('calibBanner');
-  if (banner) {
-    banner.innerHTML = (s.profile && !s.profile.calib)
-      ? `<div class="calib-banner" onclick="openCalib()">
-           <div>
-             <div class="calib-banner-tag">À faire</div>
-             <div class="calib-banner-msg">Évalue ton niveau de départ — un test de ${CALIB_TESTS.length} exos jusqu'à l'échec (~5 min).</div>
-           </div>
-           <span class="calib-banner-go">Tester →</span>
-         </div>`
-      : '';
+  if (banner) banner.innerHTML = '';
+  if (!s.profile || !s.profile.calib) {
+    document.getElementById('challengesAux').textContent = '—';
+    document.getElementById('steps').innerHTML = '';
+    syncWake(false);
+    cancelRest();
+    document.getElementById('challengeArea').innerHTML = `
+      <div class="gate">
+        <div class="gate-tag">Évaluation requise</div>
+        <div class="gate-head">Aucun défi tant que tu n'es pas évalué.</div>
+        <div class="gate-sub">Stride, c'est la science dans le sport : impossible de te donner un nombre de pompes ou de swings <b>juste</b> sans mesurer tes vraies capacités d'abord. Fais le test — 4 exercices menés à l'échec, ~5 min — et chaque défi se cale sur tes chiffres réels.</div>
+        <button class="btn-inline full" onclick="openCalib()">Faire mon évaluation</button>
+      </div>`;
+    todayWasComplete = false;
+    todayRenderInit = true;
+    return;
   }
 
   const dk = todayKey();
@@ -1186,16 +1208,21 @@ function renderProfile(s) {
   document.getElementById('profBmi').textContent = bmi.toFixed(1);
 
   const li = s.levelInfo;
-  document.getElementById('profLvlNum').textContent = li.level;
-  document.getElementById('profLvlXp').textContent = `${Math.round(li.total)} XP`;
-  document.getElementById('profLvlBar').style.width = li.pct.toFixed(1) + '%';
-  document.getElementById('profLvlDiff').textContent = `${Math.round(levelDifficulty(li.level) * 100)} %`;
+  const calibrated = !!p.calib;
+  document.getElementById('profLvlNum').textContent = calibrated ? li.level : '—';
+  document.getElementById('profLvlXp').textContent = calibrated ? `${Math.round(li.total)} XP` : 'Non évalué';
+  document.getElementById('profLvlBar').style.width = (calibrated ? li.pct : 0).toFixed(1) + '%';
+  document.getElementById('profLvlDiff').textContent = calibrated ? `${Math.round(levelDifficulty(li.level) * 100)} %` : '—';
 
-  const caps = computeCapacities(p);
-  document.getElementById('capGrid').innerHTML = Object.keys(ACTIVITIES).map(id => {
-    const a = ACTIVITIES[id];
-    return `<div class="cap-cell"><div class="cap-num">${caps[id]}${a.unit === 'sec' ? ' s' : ''}${a.kb ? '<span class="cap-kb">KB</span>' : ''}</div><div class="cap-name">${a.name}</div></div>`;
-  }).join('');
+  if (!calibrated) {
+    document.getElementById('capGrid').innerHTML = `<div class="cap-empty">Fais ton évaluation pour afficher tes capacités. Sans mesure, pas de chiffres — c'est le principe.</div>`;
+  } else {
+    const caps = computeCapacities(p);
+    document.getElementById('capGrid').innerHTML = Object.keys(ACTIVITIES).map(id => {
+      const a = ACTIVITIES[id];
+      return `<div class="cap-cell"><div class="cap-num">${caps[id]}${a.unit === 'sec' ? ' s' : ''}${a.kb ? '<span class="cap-kb">KB</span>' : ''}</div><div class="cap-name">${a.name}</div></div>`;
+    }).join('');
+  }
   const calibBtn = document.getElementById('calibBtn');
   if (calibBtn) calibBtn.textContent = p.calib ? 'Refaire le test d\'évaluation' : 'Faire le test d\'évaluation';
 }

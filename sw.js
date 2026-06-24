@@ -1,6 +1,6 @@
 // Stride service worker — app shell + fonts cache for offline use.
 // Bump CACHE_VERSION on every shell change to flush old caches.
-const CACHE_VERSION = 'stride-v10';
+const CACHE_VERSION = 'stride-v11';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {
