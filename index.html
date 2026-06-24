@@ -326,6 +326,24 @@ button { cursor: pointer; }
 .modal-actions .btn-inline { flex: 1; padding: 14px; }
 .onb-input { width: 100%; background: transparent; border: none; border-bottom: 1.5px solid var(--text); padding: 14px 0; font-family: 'Geist', sans-serif; font-size: 44px; font-weight: 400; color: var(--text); font-feature-settings: 'tnum'; letter-spacing: -0.02em; }
 .onb-input:focus { border-bottom-color: var(--accent); }
+
+/* === TEST D'ÉVALUATION === */
+.calib-intro { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.calib-intro b { color: var(--text); font-weight: 600; }
+.calib-img { width: 100%; height: 150px; object-fit: cover; border-radius: var(--radius); background: var(--surface-2); margin: 4px 0 14px; }
+.calib-desc { font-size: 13px; line-height: 1.5; color: var(--text-3); margin-bottom: 16px; }
+.calib-q { font-size: 14px; color: var(--text); font-weight: 600; margin-bottom: 2px; }
+.calib-side { font-size: 13px; color: var(--accent); font-weight: 500; }
+.calib-results { margin-top: 14px; border-top: 1px solid var(--border); }
+.calib-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--text-2); }
+.calib-row b { color: var(--accent); font-weight: 600; }
+.calib-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 18px; cursor: pointer; }
+.calib-banner:active { transform: scale(0.99); }
+.calib-banner-tag { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 3px; }
+.calib-banner-msg { font-size: 13.5px; color: var(--text); line-height: 1.4; }
+.calib-banner-go { color: var(--accent); font-weight: 700; font-size: 13px; white-space: nowrap; }
+.calib-test-btn { width: 100%; margin-top: 14px; padding: 14px; border: 1px solid var(--accent); color: var(--accent); border-radius: var(--radius); font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600; background: transparent; }
+.calib-test-btn:active { background: var(--accent-dim); }
 </style>
 </head>
 <body>
@@ -354,6 +372,8 @@ button { cursor: pointer; }
         <span id="levelHeroNext">Niv. 1 dans 100 XP</span>
       </div>
     </div>
+
+    <div id="calibBanner"></div>
 
     <div class="sec-head">
       <div class="sec-title">Défis du jour</div>
@@ -418,8 +438,9 @@ button { cursor: pointer; }
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Capacités estimées</div></div>
       <div class="capacities">
-        <div class="capacities-sub">Tes max estimés avec ta kettlebell et ton poids du corps. Les défis du jour partent de 70 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
+        <div class="capacities-sub">Tes max — estimés au départ, ou mesurés via le test d'évaluation. Les défis du jour partent de 70 % de ces valeurs (niveau 0) et montent à chaque niveau gagné. « KB » = exercice avec kettlebell.</div>
         <div class="cap-grid" id="capGrid"></div>
+        <button class="calib-test-btn" id="calibBtn" onclick="openCalib()">Faire le test d'évaluation</button>
       </div>
     </div>
 
@@ -482,6 +503,10 @@ button { cursor: pointer; }
       <button class="btn-inline" onclick="logWeight()">Enregistrer</button>
     </div>
   </div>
+</div>
+
+<div class="modal-bg" id="modalCalib">
+  <div class="modal" id="calibModal"><!-- injecté par renderCalib() --></div>
 </div>
 
 <div class="modal-bg" id="modalInfo">
@@ -621,8 +646,8 @@ function setProfile(p) { invalidateXp(); STORE.set('profile', p); }
 function kbWeightOf(p) { const w = p && p.kbWeight; return (typeof w === 'number' && w > 0) ? w : 16; }
 
 /* === CAPACITÉS ===
-   Max estimés à partir du profil + charge de la kettlebell. */
-function computeCapacities(p) {
+   Max bruts estimés à partir du profil + charge de la kettlebell. */
+function rawCapacities(p) {
   const heightM = p.height / 100;
   const bmi = p.weight / (heightM * heightM);
   const ageF = p.age <= 25 ? 1.0 : Math.max(0.55, 1.0 - (p.age - 25) * 0.011);
@@ -631,8 +656,7 @@ function computeCapacities(p) {
   const fBmiLegs = bmi > 32 ? 0.85 : bmi < 18.5 ? 0.92 : 1.0;
   const fLvl = p.level === 'sed' ? 0.45 : p.level === 'occ' ? 0.75 : 1.0;
   const fGoal = p.goal === 'fat' ? 1.10 : p.goal === 'muscle' ? 0.95 : 1.0;
-  const kbWeight = kbWeightOf(p);
-  const fLoad = Math.max(0.5, Math.min(1.8, 16 / kbWeight));
+  const fLoad = Math.max(0.5, Math.min(1.8, 16 / kbWeightOf(p)));
 
   const result = {};
   for (const k in ACTIVITIES) {
@@ -642,10 +666,37 @@ function computeCapacities(p) {
     else if (a.cat === 'bas') f *= fLegs * fBmiLegs;
     else f *= fCore;
     if (a.kb) f *= fLoad;
-    const value = a.baseFactor * f;
-    result[k] = Math.max(a.unit === 'sec' ? 15 : 5, Math.round(value));
+    result[k] = a.baseFactor * f; // brut, non arrondi
   }
   return result;
+}
+// Max retenus = bruts × calibrage mesuré par catégorie (test d'évaluation), sinon ×1.
+function computeCapacities(p) {
+  const raw = rawCapacities(p);
+  const cal = (p && p.calib) || {};
+  const result = {};
+  for (const k in raw) {
+    const a = ACTIVITIES[k];
+    const m = cal[a.cat] || 1;
+    result[k] = Math.max(a.unit === 'sec' ? 15 : 5, Math.round(raw[k] * m));
+  }
+  return result;
+}
+// Le test d'évaluation : exercices testés (un par catégorie de défi).
+const CALIB_TESTS = ['pompes', 'rowing', 'goblet', 'gainage'];
+function applyCalibration(maxes) {
+  const p = getProfile();
+  const raw = rawCapacities(p);
+  const cal = Object.assign({}, p.calib || {});
+  CALIB_TESTS.forEach(id => {
+    const v = maxes[id];
+    if (typeof v === 'number' && v > 0 && raw[id] > 0) {
+      const cat = ACTIVITIES[id].cat;
+      cal[cat] = Math.max(0.3, Math.min(3, v / raw[id]));
+    }
+  });
+  p.calib = cal;
+  setProfile(p);
 }
 
 /* === XP / NIVEAU ===
@@ -946,6 +997,19 @@ function renderToday(s) {
   document.getElementById('todayTitle').textContent = dayNames[today.getDay()];
   document.getElementById('todayDate').textContent = `${today.getDate()} ${monthNames[today.getMonth()]}`;
 
+  const banner = document.getElementById('calibBanner');
+  if (banner) {
+    banner.innerHTML = (s.profile && !s.profile.calib)
+      ? `<div class="calib-banner" onclick="openCalib()">
+           <div>
+             <div class="calib-banner-tag">À faire</div>
+             <div class="calib-banner-msg">Évalue ton niveau de départ — un test de ${CALIB_TESTS.length} exos jusqu'à l'échec (~5 min).</div>
+           </div>
+           <span class="calib-banner-go">Tester →</span>
+         </div>`
+      : '';
+  }
+
   const dk = todayKey();
   const reps = STORE.get('reps_' + dk, {});
   const challenges = pickDailyChallenges(today);
@@ -1131,6 +1195,8 @@ function renderProfile(s) {
     const a = ACTIVITIES[id];
     return `<div class="cap-cell"><div class="cap-num">${caps[id]}${a.unit === 'sec' ? ' s' : ''}${a.kb ? '<span class="cap-kb">KB</span>' : ''}</div><div class="cap-name">${a.name}</div></div>`;
   }).join('');
+  const calibBtn = document.getElementById('calibBtn');
+  if (calibBtn) calibBtn.textContent = p.calib ? 'Refaire le test d\'évaluation' : 'Faire le test d\'évaluation';
 }
 
 /* === ACTIONS === */
@@ -1183,6 +1249,81 @@ function validateChallenge(id, event) {
     if (navigator.vibrate) navigator.vibrate(40);
   }
   renderAll();
+}
+
+/* === TEST D'ÉVALUATION ===
+   Quelques exercices menés à l'échec → calibre les capacités sur tes vrais max. */
+let calibStep = 0, calibMaxes = {};
+function openCalib() { calibStep = 0; calibMaxes = {}; renderCalib(); openModal('modalCalib'); }
+function calibBack() { if (calibStep > 0) { calibStep--; renderCalib(); } }
+function calibNext() {
+  const N = CALIB_TESTS.length;
+  if (calibStep >= 1 && calibStep <= N) {
+    const id = CALIB_TESTS[calibStep - 1];
+    const a = ACTIVITIES[id];
+    const el = document.getElementById('calibInput');
+    const v = parseFloat(el && el.value);
+    const max = a.unit === 'sec' ? 600 : 300;
+    if (!v || v < 1 || v > max) { if (el) el.focus(); return; }
+    calibMaxes[id] = Math.round(v);
+  }
+  calibStep++;
+  if (calibStep === N + 1) { applyCalibration(calibMaxes); renderAll(); }
+  renderCalib();
+}
+function renderCalib() {
+  const box = document.getElementById('calibModal');
+  if (!box) return;
+  const N = CALIB_TESTS.length;
+  if (calibStep === 0) {
+    box.innerHTML = `
+      <div class="modal-tag">Test d'évaluation</div>
+      <div class="modal-title">Mesurons ton <em>niveau de départ</em></div>
+      <div class="calib-intro">${N} exercices, un par famille. Pour chacun : <b>fais le maximum de répétitions en une seule série</b>, à fond mais avec une forme propre — arrête dès que la technique casse. L'app calibre ensuite tes défis sur tes vrais chiffres.</div>
+      <div class="calib-intro" style="margin-top:10px;color:var(--text-3)">Échauffe-toi avant. Tu peux refaire ce test quand tu veux depuis l'onglet Profil.</div>
+      <div class="modal-actions" style="margin-top:24px">
+        <button class="btn-inline ghost" onclick="closeModal('modalCalib')">Plus tard</button>
+        <button class="btn-inline" onclick="calibNext()">Commencer</button>
+      </div>`;
+    return;
+  }
+  if (calibStep <= N) {
+    const id = CALIB_TESTS[calibStep - 1];
+    const a = ACTIVITIES[id];
+    const isSec = a.unit === 'sec';
+    const prev = calibMaxes[id];
+    const kb = a.kb ? ` · kettlebell ${kbWeightOf(getProfile())} kg` : '';
+    box.innerHTML = `
+      <div class="modal-tag">Test ${calibStep} / ${N}${kb}</div>
+      <div class="modal-title">${a.name}${a.perSide ? ' <span class="calib-side">(total 2 côtés)</span>' : ''}</div>
+      <img class="calib-img" src="${exImg(a)}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">
+      <div class="calib-desc">${a.desc}</div>
+      <div class="calib-q">${isSec ? 'Combien de secondes max tiens-tu ?' : 'Combien de reps max d\'affilée ?'}${a.perSide ? ' — les deux côtés cumulés' : ''}</div>
+      <input type="number" class="onb-input" id="calibInput" inputmode="numeric" placeholder="—" value="${prev != null ? prev : ''}" min="1" max="${isSec ? 600 : 300}" style="margin-bottom:8px">
+      <div class="modal-actions" style="margin-top:20px">
+        <button class="btn-inline ghost" onclick="calibBack()">Retour</button>
+        <button class="btn-inline" onclick="calibNext()">${calibStep === N ? 'Calculer' : 'Suivant'}</button>
+      </div>`;
+    setTimeout(() => { const el = document.getElementById('calibInput'); if (el) el.focus(); }, 220);
+    return;
+  }
+  const caps = computeCapacities(getProfile());
+  const lvl = levelFromXp(getXpTimeline().total).level;
+  const f = levelDifficulty(lvl);
+  const rows = CALIB_TESTS.map(id => {
+    const a = ACTIVITIES[id], u = a.unit === 'sec' ? ' s' : '';
+    let t = Math.max(a.unit === 'sec' ? 10 : 3, Math.round(caps[id] * f));
+    if (a.perSide && a.unit === 'reps' && t % 2) t += 1;
+    return `<div class="calib-row"><span>${a.name}</span><span><b>${caps[id]}${u}</b> max · défi ${t}${u}</span></div>`;
+  }).join('');
+  box.innerHTML = `
+    <div class="modal-tag">Calibré ✓</div>
+    <div class="modal-title">Ton <em>niveau de départ</em> est réglé</div>
+    <div class="calib-intro">Tes défis partent maintenant de <b>${Math.round(f * 100)} %</b> de tes vrais max (niveau ${lvl}). Les autres exercices sont ajustés par famille.</div>
+    <div class="calib-results">${rows}</div>
+    <div class="modal-actions" style="margin-top:22px">
+      <button class="btn-inline full" onclick="closeModal('modalCalib'); switchTab('today');">C'est parti</button>
+    </div>`;
 }
 
 /* Chrono pour les exercices en secondes (gainage, hollow). */

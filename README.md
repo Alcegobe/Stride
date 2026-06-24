@@ -17,6 +17,10 @@ L'app est mono-utilisateur : pas d'onboarding, pas de formulaire. Le profil est 
 - Une fois les 4 défis bouclés : **un mot d'encouragement spécifique au niveau** + confettis.
 - Pas d'échauffement imposé : c'est à toi d'y penser.
 
+## Test d'évaluation (calibrage)
+
+Au premier lancement, une bannière propose un **test d'évaluation** : 4 exercices (un par famille — pompes, rowing KB, goblet squat, gainage) menés **jusqu'à l'échec**. À partir de tes max réels, l'app calcule un coefficient par famille et **calibre toutes tes capacités** sur tes vrais chiffres plutôt que sur l'estimation issue du profil. C'est ce qui fixe ton niveau 0. Refaisable à tout moment depuis l'onglet Profil. Tant que le test n'est pas fait, les capacités restent estimées depuis le profil.
+
 ## Niveau / XP
 
 On gagne **1 XP par rep** (ou seconde d'effort) + un bonus à chaque pesée, et on **perd un peu d'XP** pour chaque journée passée (depuis la création du compte) où les défis ne sont pas remplis (~30 XP pour un jour entièrement manqué, proportionnel sinon, et toujours plus lent que le gain). Le **niveau** pilote la difficulté : 70 % des capacités au niveau 0, +5 % par niveau (plafond 160 %). Redescendre de niveau **allège** les défis. L'XP est recalculée jour après jour dans l'ordre chronologique (pas de récursion, pas de rétroactivité).
@@ -26,7 +30,7 @@ On gagne **1 XP par rep** (ou seconde d'effort) + un bonus à chaque pesée, et 
 - **Défis** : niveau/XP en haut, puis le défi du jour en cours.
 - **Poids** : pesées + courbe + volume total.
 - **Succès** : trophées débloqués.
-- **Profil** : mesures, niveau, capacités estimées, export/import JSON, reset.
+- **Profil** : mesures, niveau, capacités (estimées ou mesurées), test d'évaluation, export/import JSON, reset.
 
 **Live** : https://alcegobe.github.io/Stride/
 
