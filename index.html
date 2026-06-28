@@ -576,6 +576,10 @@ const ACTIVITIES = {
     desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main.",
     easier: "Pieds très écartés, ou rowing penché classique sans la planche.",
     harder: "Pieds serrés, pause 1 s en haut." },
+  thruster: { name: 'Thruster kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: false, baseFactor: 16, img: 'delts/barbell-thruster.gif',
+    desc: "Kettlebell tenue en goblet contre la poitrine, pieds largeur d'épaules. Descends en squat profond, puis remonte de façon explosive en enchaînant directement par un développé au-dessus de la tête — c'est l'élan des jambes qui propulse la cloche. Reviens en rack et recommence. Un seul geste qui charge jambes, fessiers, épaules, gainage et cardio à la fois.",
+    easier: "Coupe le mouvement en deux temps : un squat complet, puis un développé, sans les lier.",
+    harder: "Descente lente du squat, pause 1 s en bas, ou enchaîne sans repos en rack." },
 
   // BAS — jambes / fessiers (kettlebell + poids du corps)
   kbswing: { name: 'Kettlebell swing', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 30, img: 'glutes/kettlebell-swing.gif',
@@ -606,6 +610,10 @@ const ACTIVITIES = {
     desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, genoux alignés avec les pieds, et enchaîne.",
     easier: "Squats classiques rapides, sans saut.",
     harder: "Pause 1 s en position basse avant chaque saut." },
+  highpull: { name: 'Sumo high pull kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 26, img: 'traps/kettlebell-sumo-high-pull.gif',
+    desc: "Pieds larges, pointes légèrement vers l'extérieur, kettlebell au sol entre les pieds tenue à deux mains. Pousse les hanches en arrière, puis remonte par une extension explosive des jambes et des hanches en tirant la cloche jusque sous le menton, coudes hauts. Redescends en contrôle. Charnière + tirage : fessiers, dos, épaules, trapèzes et cardio dans le même geste.",
+    easier: "Tire moins haut (jusqu'au nombril), ou fais un swing classique à la place.",
+    harder: "Séries longues sans reposer la cloche au sol entre les répétitions." },
 
   // CORE — gainage / abdos (poids du corps + kettlebell)
   gainage: { name: 'Gainage', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 60, img: 'abs/front-plank-with-twist.gif',
@@ -627,13 +635,25 @@ const ACTIVITIES = {
   hollow: { name: 'Hollow hold', cat: 'core', unit: 'sec', kb: false, perSide: false, baseFactor: 30, img: 'abs/band-lying-straight-leg-raise.gif',
     desc: "Allongé sur le dos, décolle simultanément épaules et jambes tendues, bras tendus le long des oreilles. Bas du dos absolument plaqué au sol — c'est le point critique.",
     easier: "Genoux pliés, ou bras le long du corps.",
-    harder: "Bras et jambes plus proches du sol, sans décoller les lombaires." }
+    harder: "Bras et jambes plus proches du sol, sans décoller les lombaires." },
+  halo: { name: 'Halo kettlebell (autour de la tête)', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 16,
+    desc: "Debout, gainé, kettlebell tenue à l'envers par les cornes devant la poitrine. Fais-la tourner lentement autour de la tête — elle passe derrière la nuque puis revient devant — sans bouger le buste ni cambrer le bas du dos. La cible compte un tour dans chaque sens. Mobilise les épaules et le haut du dos tout en gainant le tronc.",
+    easier: "Cercles plus larges et plus lents, ou à vide pour apprendre le trajet.",
+    harder: "Enchaîne un goblet squat après chaque tour (halo + squat), ou ralentis encore le cercle." },
+  figure8: { name: 'Figure 8 kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 24, img: 'abs/kettlebell-figure-8.gif',
+    desc: "Pieds un peu plus larges que les épaules, demi-squat, dos droit. Fais passer la kettlebell d'une main à l'autre en la glissant en huit, entre et autour des jambes. Le buste reste gainé et stable : ce sont les bras qui guident la cloche. Coordination, obliques, cuisses et cardio léger en continu.",
+    easier: "Ralentis le rythme, cloche plus légère, amplitude réduite.",
+    harder: "Accélère le passage, ou descends plus bas en squat à chaque demi-tour." },
+  windmill: { name: 'Windmill kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 12, img: 'abs/kettlebell-windmill.gif',
+    desc: "Kettlebell verrouillée bras tendu au-dessus de la tête, pieds écartés et pointes orientées du côté opposé. En gardant le bras strictement vertical et le regard sur la cloche, pousse la hanche sur le côté et descends la main libre vers le pied, puis remonte gainé. Obliques, épaules et hanches. La cible compte les deux côtés cumulés.",
+    easier: "Descends moins bas (main à hauteur du genou), ou à vide pour la technique.",
+    harder: "Pause 1 s en bas, ou descends la main jusqu'au sol à chaque répétition." }
 };
 
 // Pompes toujours en premier ; les 3 autres tournent par catégorie.
-const HAUT = ['rowing', 'press', 'renegade'];
-const BAS  = ['kbswing', 'goblet', 'bulgarian', 'fentes', 'rdl', 'bridge', 'jumpsquats'];
-const CORE = ['gainage', 'kbtwist', 'deadbug', 'climbers', 'hollow'];
+const HAUT = ['rowing', 'press', 'renegade', 'thruster'];
+const BAS  = ['kbswing', 'goblet', 'bulgarian', 'fentes', 'rdl', 'bridge', 'jumpsquats', 'highpull'];
+const CORE = ['gainage', 'kbtwist', 'deadbug', 'climbers', 'hollow', 'halo', 'figure8', 'windmill'];
 
 /* === PROFIL (figé — l'app est perso) ===
    Mensurations fixées ; poids et kettlebell restent ajustables / suivis. */
@@ -849,8 +869,9 @@ function pickDailyChallenges(date) {
 const SET_STYLE = {
   pompes: 'strength', rowing: 'strength', press: 'strength', renegade: 'strength',
   goblet: 'strength', bulgarian: 'strength', fentes: 'strength', rdl: 'strength',
-  bridge: 'strength', deadbug: 'strength',
+  bridge: 'strength', deadbug: 'strength', thruster: 'strength', windmill: 'strength', halo: 'strength',
   kbswing: 'ballistic', jumpsquats: 'ballistic', kbtwist: 'ballistic', climbers: 'ballistic',
+  highpull: 'ballistic', figure8: 'ballistic',
   gainage: 'hold', hollow: 'hold'
 };
 const SET_SCHEME = {
@@ -1470,7 +1491,9 @@ function showActivityInfo(id) {
   const tag = a.cat === 'pecs' ? 'Pectoraux' : a.cat === 'haut' ? 'Haut du corps' : a.cat === 'bas' ? 'Bas du corps' : 'Core / Abdos';
   document.getElementById('modalInfoTag').textContent = tag;
   const img = document.getElementById('modalInfoImg');
-  img.style.display = ''; img.src = exImg(a); img.alt = a.name;
+  const imgUrl = exImg(a);
+  if (imgUrl) { img.style.display = ''; img.src = imgUrl; } else { img.style.display = 'none'; img.removeAttribute('src'); }
+  img.alt = a.name;
   document.getElementById('modalInfoTitle').textContent = a.name;
   let info = a.desc;
   if (a.unit === 'sec') info += `<br><br><span class="side">Compte le temps</span> : utilise le bouton « Tenir » pour lancer le chrono.`;
