@@ -151,6 +151,14 @@ button { cursor: pointer; }
 .ch-name-wrap { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .ch-name { font-size: 21px; font-weight: 600; letter-spacing: -0.02em; }
 .ch-kb { display: inline-block; margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: var(--accent); border: 1px solid var(--accent-dim); background: var(--accent-dim); border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
+.ch-compound { display: inline-block; margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: var(--text-2); border: 1px solid var(--border); border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
+.warmup { font-size: 12.5px; color: var(--text-2); line-height: 1.5; background: var(--accent-dim); border: 1px solid var(--accent-dim); border-radius: 12px; padding: 11px 14px; margin-bottom: 14px; }
+.warmup b { color: var(--text); font-weight: 600; }
+.finisher { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); text-align: left; }
+.finisher-tag { font-family: 'Geist Mono', monospace; font-size: 10px; letter-spacing: 0.18em; color: var(--text-3); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+.finisher-head { font-size: 15px; font-weight: 600; margin-bottom: 4px; letter-spacing: -0.01em; }
+.finisher-list { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-top: 8px; }
+.finisher-foot { font-size: 12px; color: var(--text-3); margin-top: 10px; line-height: 1.5; }
 .ch-info {
   width: 22px; height: 22px; flex-shrink: 0; border: 1px solid var(--border-3); background: transparent;
   color: var(--text-3); font-family: 'Geist Mono', monospace; font-size: 11px;
@@ -572,17 +580,17 @@ const ACTIVITIES = {
     desc: "Debout, kettlebell en rack contre l'avant-bras au niveau de l'épaule. Gaine fort les abdos, pousse droit au-dessus de la tête sans cambrer le bas du dos. Redescends en contrôle.",
     easier: "Aide-toi d'une légère impulsion des jambes (push press).",
     harder: "Strict, sans aucune aide des jambes, descente en 3 s." },
-  renegade: { name: 'Renegade row kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 14, img: 'upper-back/kettlebell-alternating-renegade-row.gif',
+  renegade: { name: 'Renegade row kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: true, baseFactor: 14, compound: true, img: 'upper-back/kettlebell-alternating-renegade-row.gif',
     desc: "Planche haute, une main au sol, l'autre sur la kettlebell, pieds écartés pour la stabilité. Tire la cloche vers la hanche sans tourner les hanches, repose, change de main.",
     easier: "Pieds très écartés, ou rowing penché classique sans la planche.",
     harder: "Pieds serrés, pause 1 s en haut." },
-  thruster: { name: 'Thruster kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: false, baseFactor: 16, img: 'delts/barbell-thruster.gif',
+  thruster: { name: 'Thruster kettlebell', cat: 'haut', unit: 'reps', kb: true, perSide: false, baseFactor: 16, compound: true, legHeavy: true, img: 'delts/barbell-thruster.gif',
     desc: "Kettlebell tenue en goblet contre la poitrine, pieds largeur d'épaules. Descends en squat profond, puis remonte de façon explosive en enchaînant directement par un développé au-dessus de la tête — c'est l'élan des jambes qui propulse la cloche. Reviens en rack et recommence. Un seul geste qui charge jambes, fessiers, épaules, gainage et cardio à la fois.",
     easier: "Coupe le mouvement en deux temps : un squat complet, puis un développé, sans les lier.",
     harder: "Descente lente du squat, pause 1 s en bas, ou enchaîne sans repos en rack." },
 
   // BAS — jambes / fessiers (kettlebell + poids du corps)
-  kbswing: { name: 'Kettlebell swing', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 30, img: 'glutes/kettlebell-swing.gif',
+  kbswing: { name: 'Kettlebell swing', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 30, compound: true, img: 'glutes/kettlebell-swing.gif',
     desc: "Pieds largeur d'épaules, cloche devant toi. Pousse les hanches en arrière puis propulse la kettlebell à hauteur des épaules par une extension explosive des hanches (pas avec les bras). Dos droit.",
     easier: "Swings plus courts (hauteur du nombril), séries plus petites.",
     harder: "Swing à un bras en alternant, ou séries longues sans poser." },
@@ -610,7 +618,7 @@ const ACTIVITIES = {
     desc: "Squat normal, mais en remontant explose vers le haut en sautant. Atterris en douceur sur les plantes des pieds, genoux alignés avec les pieds, et enchaîne.",
     easier: "Squats classiques rapides, sans saut.",
     harder: "Pause 1 s en position basse avant chaque saut." },
-  highpull: { name: 'Sumo high pull kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 26, img: 'traps/kettlebell-sumo-high-pull.gif',
+  highpull: { name: 'Sumo high pull kettlebell', cat: 'bas', unit: 'reps', kb: true, perSide: false, baseFactor: 26, compound: true, img: 'traps/kettlebell-sumo-high-pull.gif',
     desc: "Pieds larges, pointes légèrement vers l'extérieur, kettlebell au sol entre les pieds tenue à deux mains. Pousse les hanches en arrière, puis remonte par une extension explosive des jambes et des hanches en tirant la cloche jusque sous le menton, coudes hauts. Redescends en contrôle. Charnière + tirage : fessiers, dos, épaules, trapèzes et cardio dans le même geste.",
     easier: "Tire moins haut (jusqu'au nombril), ou fais un swing classique à la place.",
     harder: "Séries longues sans reposer la cloche au sol entre les répétitions." },
@@ -640,7 +648,7 @@ const ACTIVITIES = {
     desc: "Debout, gainé, kettlebell tenue à l'envers par les cornes devant la poitrine. Fais-la tourner lentement autour de la tête — elle passe derrière la nuque puis revient devant — sans bouger le buste ni cambrer le bas du dos. La cible compte un tour dans chaque sens. Mobilise les épaules et le haut du dos tout en gainant le tronc.",
     easier: "Cercles plus larges et plus lents, ou à vide pour apprendre le trajet.",
     harder: "Enchaîne un goblet squat après chaque tour (halo + squat), ou ralentis encore le cercle." },
-  figure8: { name: 'Figure 8 kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 24, img: 'abs/kettlebell-figure-8.gif',
+  figure8: { name: 'Figure 8 kettlebell', cat: 'core', unit: 'reps', kb: true, perSide: true, baseFactor: 24, compound: true, img: 'abs/kettlebell-figure-8.gif',
     desc: "Pieds un peu plus larges que les épaules, demi-squat, dos droit. Fais passer la kettlebell d'une main à l'autre en la glissant en huit, entre et autour des jambes. Le buste reste gainé et stable : ce sont les bras qui guident la cloche. Coordination, obliques, cuisses et cardio léger en continu.",
     easier: "Ralentis le rythme, cloche plus légère, amplitude réduite.",
     harder: "Accélère le passage, ou descends plus bas en squat à chaque demi-tour." },
@@ -818,18 +826,52 @@ function levelForDate(dk) {
 /* === TIRAGE DES DÉFIS ===
    Pompes toujours en slot 1 ; haut/bas/core déterministes par date,
    avec anti-répétition de la veille. */
-function rawPicksFor(dk) {
-  let s = parseInt(dk.replace(/-/g, ''), 10);
-  function next() { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; }
-  function pick(arr) { return arr[next() % arr.length]; }
-  return { haut: pick(HAUT), bas: pick(BAS), core: pick(CORE) };
+// Hash de chaîne à bon avalanche : tout le mot de 32 bits est mélangé,
+// donc « % longueur du pool » se répartit uniformément. L'ancien LCG
+// ci-dessous ne faisait varier que ses bits de poids faible d'un jour
+// à l'autre → il restait bloqué sur un seul exercice par catégorie.
+function hashStr(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^ (h >>> 16)) >>> 0;
 }
+function pickHashed(arr, dk, salt) { return arr[hashStr(dk + ':' + salt) % arr.length]; }
+// Transition : avant cette date on garde l'ancien tirage tel quel, pour ne
+// pas réécrire l'historique (la complétion passée — et donc le niveau — est
+// calculée contre les exercices réellement proposés ces jours-là). À partir
+// de cette date, le tirage est réparti sur tout le pool.
+const PICK_TRANSITION = '2026-06-28';
+function rawPicksFor(dk) {
+  if (dk < PICK_TRANSITION) {
+    let s = parseInt(dk.replace(/-/g, ''), 10);
+    const next = () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s; };
+    const pick = arr => arr[next() % arr.length];
+    return { haut: pick(HAUT), bas: pick(BAS), core: pick(CORE) };
+  }
+  return { haut: pickHashed(HAUT, dk, 'h'), bas: pickHashed(BAS, dk, 'b'), core: pickHashed(CORE, dk, 'c') };
+}
+// Squats profonds du pool BAS : on évite d'en mettre un le jour où le slot
+// « haut » tombe sur le thruster (lui-même très axé jambes) — sinon les
+// cuisses prennent deux gros mouvements de squat dans la même séance.
+const SQUAT_BAS = ['goblet', 'bulgarian', 'fentes', 'jumpsquats'];
+const HINGE_BAS = BAS.filter(id => !SQUAT_BAS.includes(id)); // charnières/tirages
 function picksFor(dk) {
   const p = rawPicksFor(dk);
   const prev = rawPicksFor(dateKey(addDays(new Date(dk + 'T00:00:00'), -1)));
   const pools = { haut: HAUT, bas: BAS, core: CORE };
   for (const cat in pools) {
     if (p[cat] === prev[cat]) { const arr = pools[cat]; p[cat] = arr[(arr.indexOf(p[cat]) + 1) % arr.length]; }
+  }
+  // Équilibrage : thruster (haut, lourd pour les jambes) + squat (bas) → on
+  // remplace le bas par une charnière (tirée au hasard du jour, pour ne pas
+  // toujours retomber sur le même), jamais par un autre squat.
+  if (p.haut === 'thruster' && SQUAT_BAS.includes(p.bas)) {
+    p.bas = HINGE_BAS[hashStr(dk + ':balance') % HINGE_BAS.length];
   }
   return p;
 }
@@ -898,6 +940,27 @@ function repBreakdown(c) {
   if (a.unit === 'sec') return `${c.target} secondes à tenir`;
   if (a.perSide) { const half = Math.round(c.target / 2); return `<b>${c.target} reps au total</b> · ${half} de chaque côté`; }
   return `<b>${c.target} reps</b>`;
+}
+
+/* === FINISHER (parcours pluri-musculaire optionnel) ===
+   Une fois les défis du jour bouclés, on propose un petit circuit cardio
+   d'exercices composés : 3 tours, charge allégée (~45 % du max) pour garder
+   un rythme soutenu. Déterministe par date, calé sur les capacités. */
+const FINISHER_POOL = ['kbswing', 'thruster', 'highpull', 'figure8', 'renegade'];
+function buildFinisher(profile, dk) {
+  if (!profile || !profile.calib) return null;
+  const caps = computeCapacities(profile);
+  let i = 0;
+  const next = () => hashStr(dk + ':fin:' + (i++));
+  const pool = FINISHER_POOL.slice(), chosen = [];
+  while (chosen.length < 3 && pool.length) chosen.push(pool.splice(next() % pool.length, 1)[0]);
+  const moves = chosen.map(id => {
+    const a = ACTIVITIES[id];
+    let reps = Math.max(6, Math.round((caps[id] || 12) * 0.45));
+    if (a.perSide && reps % 2 !== 0) reps += 1;
+    return { name: a.name, reps, perSide: !!a.perSide };
+  });
+  return { rounds: 3, rest: 60, moves };
 }
 
 /* === AGRÉGATION === */
@@ -1078,12 +1141,24 @@ function renderToday(s) {
     // Tous les défis faits → mot d'encouragement spécifique au niveau.
     cancelRest(true);
     const m = completionMessage(s.levelInfo.level);
+    const fin = buildFinisher(s.profile, dk);
+    const finHtml = fin ? `
+        <div class="finisher">
+          <div class="finisher-tag">Finisher cardio · optionnel</div>
+          <div class="finisher-head">Encore du jus ? Un parcours pluri-musculaire.</div>
+          <div class="finisher-list">
+            <b>${fin.rounds} tours</b> à enchaîner, ${fin.rest} s de récup entre les tours :<br>
+            ${fin.moves.map(mv => `· ${mv.reps}${mv.perSide ? ' (les deux côtés)' : ''} ${mv.name}`).join('<br>')}
+          </div>
+          <div class="finisher-foot">Charge allégée, on garde le rythme : c'est du cardio + renfort plein corps. Reps non comptées — c'est du bonus.</div>
+        </div>` : '';
     area.innerHTML = `
       <div class="complete">
         <div class="complete-tag">${m.tag} · Niveau ${s.levelInfo.level}</div>
         <div class="complete-head">${m.head}</div>
         <div class="complete-sub">${m.sub}</div>
         ${s.streak > 1 ? `<div class="complete-streak">Série en cours · <b>${s.streak} jours</b></div>` : ''}
+        ${finHtml}
       </div>`;
     if (todayRenderInit && !todayWasComplete) { burstConfetti(); if (navigator.vibrate) navigator.vibrate([20, 40, 30, 40, 60]); }
     todayWasComplete = true;
@@ -1100,7 +1175,12 @@ function renderToday(s) {
   const pct = Math.min(100, (cur / c.target) * 100);
   const tag = a.cat === 'pecs' ? 'Pectoraux' : a.cat === 'haut' ? 'Haut du corps' : a.cat === 'bas' ? 'Bas du corps' : 'Core';
   const kbBadge = a.kb ? `<span class="ch-kb">${kbWeightOf(s.profile)} kg</span>` : '';
+  const compBadge = a.compound ? `<span class="ch-compound" title="Mouvement pluri-musculaire : plusieurs groupes + cardio">Complet</span>` : '';
   const unit = a.unit === 'sec' ? 'secondes' : 'reps';
+  // Échauffement : rappelé au tout premier geste de la séance (coach).
+  const warmup = (done === 0 && cur === 0)
+    ? `<div class="warmup"><b>Échauffe-toi d'abord</b> — 2-3 min : cercles de bras et d'épaules, quelques squats à vide, montées de genoux. Un halo léger réveille épaules et tronc.</div>`
+    : '';
   const tip = suggestSets(c);
   let hint;
   if (!tip) {
@@ -1121,12 +1201,13 @@ function renderToday(s) {
   }
 
   area.innerHTML = `
+    ${warmup}
     <div class="ch-card" data-cid="${c.id}">
       <img class="ch-img" src="${exImg(a)}" alt="${a.name}" loading="lazy" onerror="this.style.display='none'">
       <div class="ch-body">
         <div class="ch-top">
           <div class="ch-name-wrap">
-            <div class="ch-name" onclick="showActivityInfo('${c.id}')">${a.name}${kbBadge}</div>
+            <div class="ch-name" onclick="showActivityInfo('${c.id}')">${a.name}${kbBadge}${compBadge}</div>
             <button class="ch-info" onclick="showActivityInfo('${c.id}')" aria-label="Infos">?</button>
           </div>
           <div class="ch-tag">${tag}</div>
@@ -1499,6 +1580,7 @@ function showActivityInfo(id) {
   if (a.unit === 'sec') info += `<br><br><span class="side">Compte le temps</span> : utilise le bouton « Tenir » pour lancer le chrono.`;
   else if (a.perSide) info += `<br><br><span class="side">Répétitions</span> : la cible est un <b>total</b>. Fais la moitié d'un côté, la moitié de l'autre (ex. cible 12 → 6 à droite, 6 à gauche).`;
   else info += `<br><br><span class="side">Répétitions</span> : la cible est le nombre total de mouvements (pas de côté à distinguer).`;
+  if (a.compound) info += `<br><br><span class="side">Mouvement complet</span> : pluri-musculaire — il sollicite plusieurs groupes en même temps et fait grimper le cardio. Idéal pour brûler des calories tout en renforçant.`;
   if (a.easier) info += `<br><br><b>Trop dur ?</b> ${a.easier}`;
   if (a.harder) info += `<br><b>Trop facile ?</b> ${a.harder}`;
   document.getElementById('modalInfoText').innerHTML = info;
